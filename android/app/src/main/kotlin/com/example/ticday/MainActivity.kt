@@ -1,4 +1,4 @@
-package com.example.ticday
+package com.ticday.app
 
 import io.flutter.embedding.android.FlutterActivity
 

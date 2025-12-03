@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "631681580288",
+    "project_id": "ticdaygh",
+    "storage_bucket": "ticdaygh.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:631681580288:android:42a38ac3a7fe4a08e607e5",
+        "android_client_info": {
+          "package_name": "com.ticday.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYw34fB5i8Dh5eNPbzbUpT_2v0eM6lH6o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

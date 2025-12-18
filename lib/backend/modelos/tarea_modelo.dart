@@ -1,6 +1,7 @@
 class Tarea {
   final String id;
   final String titulo;
+  final String? descripcion;
   final DateTime? horaInicio;
   final DateTime? horaFin;
   final int? duracionMinutos;
@@ -12,6 +13,7 @@ class Tarea {
   Tarea({
     required this.id,
     required this.titulo,
+    this.descripcion,
     this.horaInicio,
     this.horaFin,
     this.duracionMinutos,
@@ -26,6 +28,7 @@ class Tarea {
     return Tarea(
       id: id,
       titulo: mapa["titulo"],
+      descripcion: mapa["descripcion"], // ← agregado
       horaInicio: mapa["horaInicio"] != null
           ? DateTime.parse(mapa["horaInicio"])
           : null,
@@ -42,6 +45,7 @@ class Tarea {
   Map<String, dynamic> aMapa() {
     return {
       "titulo": titulo,
+      "descripcion": descripcion, // ← agregado
       "horaInicio": horaInicio?.toIso8601String(),
       "horaFin": horaFin?.toIso8601String(),
       "duracionMinutos": duracionMinutos,
@@ -56,6 +60,7 @@ class Tarea {
   Tarea copiaCon({
     String? id,
     String? titulo,
+    String? descripcion, // ← agregado
     DateTime? horaInicio,
     DateTime? horaFin,
     int? duracionMinutos,
@@ -67,6 +72,7 @@ class Tarea {
     return Tarea(
       id: id ?? this.id,
       titulo: titulo ?? this.titulo,
+      descripcion: descripcion ?? this.descripcion, // ← agregado
       horaInicio: horaInicio ?? this.horaInicio,
       horaFin: horaFin ?? this.horaFin,
       duracionMinutos: duracionMinutos ?? this.duracionMinutos,

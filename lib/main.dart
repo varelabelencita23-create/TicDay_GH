@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:device_preview/device_preview.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
 import 'firebase_options.dart';
-import 'frontend/vistas/inicio_vista.dart';
-import 'frontend/vistas/agregar_tarea_vista.dart';
 import 'frontend/vistas/main_layout.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await initializeDateFormatting('es');
 
   runApp(const TicDayFinal());
 }

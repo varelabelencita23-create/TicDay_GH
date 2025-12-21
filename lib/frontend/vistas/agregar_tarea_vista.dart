@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ticday/frontend/temas/temas.dart';
+import '../../backend/modelos/tarea_modelo.dart';
+import '../../backend/controladores/agregar_tarea_controlador.dart';
+import 'package:uuid/uuid.dart';
 
 class AgregarTareaVista extends StatefulWidget {
   const AgregarTareaVista({super.key});
@@ -10,13 +13,15 @@ class AgregarTareaVista extends StatefulWidget {
 }
 
 class _AgregarTareaVistaState extends State<AgregarTareaVista> {
+  final _ctrl = AgregarTareaControlador();
   final TextEditingController _tituloCtrl = TextEditingController();
   final TextEditingController _descripcionCtrl = TextEditingController();
 
   DateTime? _horaInicio;
   DateTime? _horaFin;
-
   String? _categoriaSeleccionada;
+
+  bool _guardando = false;
 
   final List<Map<String, dynamic>> _categorias = [
     {"icon": Icons.book, "label": "Estudio"},
@@ -33,202 +38,156 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
     {"icon": Icons.place, "label": "Lugar"},
   ];
 
-  Future<void> _seleccionarHoraInicio() async {
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.white,
-              onPrimary: Colors.black,
-              surface: Temas.WidgetOscuro,
-              onSurface: Colors.white,
-            ),
-            dialogBackgroundColor: Temas.FondoOscuro,
-          ),
-          child: child!,
-        );
-      },
+  void _mostrarError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _guardarTarea() async {
+    if (_tituloCtrl.text.trim().isEmpty) {
+      _mostrarError("El título es obligatorio");
+      return;
+    }
+
+    if (_categoriaSeleccionada == null) {
+      _mostrarError("Seleccioná una categoría");
+      return;
+    }
+
+    setState(() => _guardando = true);
+
+    final tarea = Tarea(
+      id: const Uuid().v4(),
+      titulo: _tituloCtrl.text.trim(),
+      descripcion: _descripcionCtrl.text.trim().isEmpty
+          ? null
+          : _descripcionCtrl.text.trim(),
+      horaInicio: _horaInicio,
+      horaFin: _horaFin,
+      duracionMinutos: (_horaInicio != null && _horaFin != null)
+          ? _ctrl.calcularDuracion(_horaInicio!, _horaFin!).inMinutes
+          : null,
+      icono: _categoriaSeleccionada,
+      completado: false,
+      creadoEl: DateTime.now(),
+      usuarioId: "usuario_demo",
     );
 
-    if (time != null) {
-      final now = DateTime.now();
-      setState(() {
-        _horaInicio = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          time.hour,
-          time.minute,
-        );
-      });
+    try {
+      await _ctrl.crearTarea(tarea);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      _mostrarError("Error al guardar la tarea");
     }
   }
 
-  Future<void> _seleccionarHoraFin() async {
+  Future<DateTime?> _pickHora() async {
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: ThemeData.dark().copyWith(
             colorScheme: const ColorScheme.dark(
               primary: Colors.white,
               onPrimary: Colors.black,
-              surface: Temas.WidgetOscuro,
+              surface: Color(0xFF1E1E1E),
               onSurface: Colors.white,
             ),
-            dialogBackgroundColor: Temas.FondoOscuro,
           ),
           child: child!,
         );
       },
     );
 
-    if (time != null) {
-      final now = DateTime.now();
-      setState(() {
-        _horaFin = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          time.hour,
-          time.minute,
-        );
-      });
-    }
+    if (time == null) return null;
+
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day, time.hour, time.minute);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Temas.FondoOscuro,
-
       appBar: AppBar(
         backgroundColor: Temas.FondoOscuro,
-        elevation: 0,
-        title: const Text(
-          "Nueva actividad",
-          style: TextStyle(color: Temas.TextOscuro),
-        ),
-        iconTheme: const IconThemeData(color: Temas.TextOscuro),
+        title: const Text("Nueva actividad"),
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // INPUT NOMBRE
             TextField(
               controller: _tituloCtrl,
+              decoration: _input("Nombre de la actividad"),
               style: const TextStyle(color: Temas.TextOscuro),
-              decoration: InputDecoration(
-                hintText: "Nombre de la actividad",
-                hintStyle: TextStyle(color: Temas.TextOscuro.withOpacity(0.5)),
-                filled: true,
-                fillColor: Temas.WidgetOscuro,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // HORA INICIO
             SwitchListTile(
-              activeColor: Colors.white,
-              activeTrackColor: const Color(0xFF04ED0C),
-              inactiveThumbColor: Colors.white,
-              inactiveTrackColor: Temas.WidgetOscuro,
-              contentPadding: EdgeInsets.zero,
               title: const Text(
                 "Hora inicio",
-                style: TextStyle(
-                  color: Temas.TextOscuro,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Temas.TextOscuro),
               ),
               subtitle: Text(
                 _horaInicio != null
-                    ? "Hora: ${DateFormat("HH:mm").format(_horaInicio!)}"
+                    ? DateFormat("HH:mm").format(_horaInicio!)
                     : "Sin hora",
-                style: const TextStyle(color: Colors.white70),
+                style: const TextStyle(color: Colors.grey),
               ),
               value: _horaInicio != null,
+              activeColor: Colors.white,
+              activeTrackColor: const Color(0xFF39FF14),
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: Colors.grey.shade700,
               onChanged: (v) async {
-                if (v) {
-                  await _seleccionarHoraInicio();
-                } else {
+                if (!v) {
                   setState(() => _horaInicio = null);
+                } else {
+                  final h = await _pickHora();
+                  if (h != null) setState(() => _horaInicio = h);
                 }
               },
             ),
 
-            const SizedBox(height: 10),
-
-            // HORA FIN
             SwitchListTile(
-              activeColor: Colors.white,
-              activeTrackColor: const Color(0xFF04ED0C),
-              inactiveThumbColor: Colors.white,
-              inactiveTrackColor: Temas.WidgetOscuro,
-              contentPadding: EdgeInsets.zero,
               title: const Text(
                 "Hora fin",
-                style: TextStyle(
-                  color: Temas.TextOscuro,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Temas.TextOscuro),
               ),
               subtitle: Text(
                 _horaFin != null
-                    ? "Hora: ${DateFormat("HH:mm").format(_horaFin!)}"
+                    ? DateFormat("HH:mm").format(_horaFin!)
                     : "Sin hora",
-                style: const TextStyle(color: Colors.white70),
+                style: const TextStyle(color: Colors.grey),
               ),
               value: _horaFin != null,
+              activeColor: Colors.white,
+              activeTrackColor: const Color(0xFF39FF14),
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: Colors.grey.shade700,
               onChanged: (v) async {
-                if (v) {
-                  await _seleccionarHoraFin();
-                } else {
+                if (!v) {
                   setState(() => _horaFin = null);
+                } else {
+                  final h = await _pickHora();
+                  if (h != null) setState(() => _horaFin = h);
                 }
               },
             ),
 
-            const SizedBox(height: 20),
-
-            const Text(
-              "Descripción",
-              style: TextStyle(
-                color: Temas.TextOscuro,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
             TextField(
               controller: _descripcionCtrl,
-              maxLines: 4,
+              maxLines: 3,
+              decoration: _input("Descripción"),
               style: const TextStyle(color: Temas.TextOscuro),
-              decoration: InputDecoration(
-                hintText: "Descripción de la actividad",
-                hintStyle: TextStyle(color: Temas.TextOscuro.withOpacity(0.5)),
-                filled: true,
-                fillColor: Temas.WidgetOscuro,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 20),
 
             const Text(
               "Categorías",
@@ -237,6 +196,7 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 12),
 
             GridView.builder(
@@ -244,10 +204,9 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _categorias.length,
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 75, // MÁS CHICO
+                maxCrossAxisExtent: 80,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
-                childAspectRatio: 0.85,
               ),
               itemBuilder: (context, i) {
                 final cat = _categorias[i];
@@ -257,38 +216,25 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
                   onTap: () =>
                       setState(() => _categoriaSeleccionada = cat["label"]),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 6,
-                      horizontal: 4,
-                    ),
                     decoration: BoxDecoration(
-                      color: selected
-                          ? Temas.AcentoColorOscuro.withOpacity(0.25)
-                          : Temas.WidgetOscuro,
+                      color: Temas.WidgetOscuro,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: selected
-                            ? Temas.AcentoColorOscuro
-                            : Colors.white24,
+                        color: selected ? Colors.white : Colors.transparent,
+                        width: 2,
                       ),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          cat["icon"],
-                          size: 22, // ICONO MÁS CHICO
-                          color: Temas.TextOscuro,
-                        ),
+                        Icon(cat["icon"], size: 22, color: Colors.white),
                         const SizedBox(height: 4),
                         Text(
                           cat["label"],
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            color: Temas.TextOscuro,
-                            fontSize: 10, // TEXTO MÁS CHICO
+                            fontSize: 10,
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -298,16 +244,16 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
               },
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 24),
 
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _guardando ? null : _guardarTarea,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Temas.AcentoColorOscuro,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -317,6 +263,19 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  InputDecoration _input(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: Colors.grey),
+      filled: true,
+      fillColor: Temas.WidgetOscuro,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
     );
   }

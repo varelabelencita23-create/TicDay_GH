@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'inicio_vista.dart';
 import 'agregar_tarea_vista.dart';
 import 'estadisticas_vista.dart';
+import '../temas/temas.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -11,35 +12,46 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> {
-  int _indexActual = 1; // 0=Home, 1=Agregar, 2=Stats
+  int _indexActual = 0;
 
-  final List<Widget> _vistas = const [
-    InicioVista(),
-    AgregarTareaVista(),
-    EstadisticasVista(),
-  ];
+  late final List<Widget> _vistas;
+
+  @override
+  void initState() {
+    super.initState();
+    _vistas = [InicioVista(), AgregarTareaVista(), EstadisticasVista()];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _vistas[_indexActual],
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _indexActual,
-        onTap: (i) => setState(() => _indexActual = i),
+      bottomNavigationBar: NavigationBar(
+        height: 65,
+        backgroundColor: Temas.FondoOscuro,
+        indicatorColor: Colors.white.withOpacity(0.12),
+        selectedIndex: _indexActual,
+        onDestinationSelected: (i) {
+          setState(() => _indexActual = i);
+        },
 
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white54,
-        type: BottomNavigationBarType.fixed,
-
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: "Añadir",
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: "Home",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Stats"),
+          NavigationDestination(
+            icon: Icon(Icons.add_circle_outline),
+            selectedIcon: Icon(Icons.add_circle),
+            label: "Add",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart_outlined),
+            selectedIcon: Icon(Icons.bar_chart),
+            label: "Stats",
+          ),
         ],
       ),
     );

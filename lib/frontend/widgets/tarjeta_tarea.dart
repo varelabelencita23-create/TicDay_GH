@@ -143,7 +143,7 @@ class TareaTarjeta extends StatelessWidget {
                 size: 20,
                 color: tarea.completado
                     ? const Color(0xFF39FF14) // verde flúor
-                    : Colors.white38,
+                    : const Color.fromARGB(255, 255, 255, 255),
               ),
               onPressed: onToggle,
             ),
@@ -153,3 +153,4 @@ class TareaTarjeta extends StatelessWidget {
     );
   }
 }
+

@@ -46,8 +46,8 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
         backgroundColor: Temas.FondoOscuro,
         title: const Text("Estadísticas"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -66,7 +66,7 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
                   stream: _controlador.obtenerEstadisticaSemanal(usuarioId),
                   builder: (context, snap) {
                     final datos = snap.data ?? [];
-                    final double promedio = datos.isEmpty
+                    final promedio = datos.isEmpty
                         ? 0.0
                         : datos.reduce((a, b) => a + b) / datos.length;
 
@@ -79,7 +79,7 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
               ],
             ),
 
-            const SizedBox(height: 36),
+            const SizedBox(height: 40),
 
             // ---------------- MES ----------------
             SelectorMes(
@@ -88,35 +88,39 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
               onSiguiente: _mesSiguiente,
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // ---------------- GRAFICO ----------------
-            Expanded(
-              child: StreamBuilder<List<double>>(
-                stream: _controlador.obtenerEstadisticaMensual(
-                  usuarioId,
-                  mesSeleccionado.month,
-                  mesSeleccionado.year,
-                ),
-                builder: (context, snap) {
-                  if (!snap.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+            StreamBuilder<List<double>>(
+              stream: _controlador.obtenerEstadisticaMensual(
+                usuarioId,
+                mesSeleccionado.month,
+                mesSeleccionado.year,
+              ),
+              builder: (context, snap) {
+                if (!snap.hasData) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 60),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
 
-                  final datos = snap.data!;
+                final datos = snap.data!;
 
-                  if (datos.every((d) => d == 0)) {
-                    return const Center(
+                if (datos.every((d) => d == 0)) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 60),
+                    child: Center(
                       child: Text(
                         "No hay datos para este mes",
                         style: TextStyle(color: Colors.white54),
                       ),
-                    );
-                  }
+                    ),
+                  );
+                }
 
-                  return GraficoMensual(datos: datos);
-                },
-              ),
+                return GraficoMensual(datos: datos);
+              },
             ),
           ],
         ),

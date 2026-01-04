@@ -4,6 +4,7 @@ import 'package:ticday/frontend/temas/temas.dart';
 import '../../backend/modelos/tarea_modelo.dart';
 import '../../backend/controladores/agregar_tarea_controlador.dart';
 import 'package:uuid/uuid.dart';
+import 'package:ticday/frontend/widgets/ios_menu.dart';
 
 class AgregarTareaVista extends StatefulWidget {
   const AgregarTareaVista({super.key});
@@ -109,10 +110,8 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Temas.FondoOscuro,
-      appBar: AppBar(
-        backgroundColor: Temas.FondoOscuro,
-        title: const Text("Nueva actividad"),
-      ),
+      appBar: AppBar(backgroundColor: Temas.FondoOscuro),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -124,7 +123,7 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
               style: const TextStyle(color: Temas.TextOscuro),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
 
             SwitchListTile(
               title: const Text(

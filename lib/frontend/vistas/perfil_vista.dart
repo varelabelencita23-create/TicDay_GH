@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:ticday/backend/controladores/perfil_controlador.dart';
 
 class PerfilVista extends StatefulWidget {
@@ -30,7 +29,6 @@ class _PerfilVistaState extends State<PerfilVista> {
 
   Future<void> _cargarPerfil() async {
     await _controlador.cargarPerfil();
-
     final perfil = _controlador.perfil;
 
     if (perfil != null) {
@@ -50,10 +48,7 @@ class _PerfilVistaState extends State<PerfilVista> {
     }
 
     if (_avatarSeleccionado == null) {
-      _mostrarAlerta(
-        'Falta elegir un avatar',
-        'Seleccioná uno para tu perfil.',
-      );
+      _mostrarAlerta('Elegí un avatar', 'Seleccioná uno antes de guardar.');
       return;
     }
 
@@ -87,13 +82,13 @@ class _PerfilVistaState extends State<PerfilVista> {
   Widget build(BuildContext context) {
     if (_cargando) {
       return const Scaffold(
-        backgroundColor: Color(0xFF000000),
+        backgroundColor: Colors.black,
         body: Center(child: CupertinoActivityIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF000000),
+      backgroundColor: Colors.black,
       appBar: CupertinoNavigationBar(
         backgroundColor: const Color(0xFF1C1C1E),
         middle: const Text('Perfil', style: TextStyle(color: Colors.white)),
@@ -108,114 +103,105 @@ class _PerfilVistaState extends State<PerfilVista> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // AVATAR PRINCIPAL
-            Center(
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: CupertinoColors.activeBlue,
-                    width: 2,
-                  ),
-                ),
-                child: ClipOval(
-                  child: _avatarSeleccionado != null
-                      ? Image.asset(
-                          'assets/avatars/$_avatarSeleccionado',
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(
-                          CupertinoIcons.person_fill,
-                          color: Colors.white38,
-                          size: 48,
-                        ),
-                ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // ================= AVATAR PRINCIPAL =================
+          Center(
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // INPUT NOMBRE
-            CupertinoFormSection.insetGrouped(
-              backgroundColor: Colors.black,
-              children: [
-                CupertinoTextFormFieldRow(
-                  controller: _nombreController,
-                  placeholder: 'Tu nombre',
-                  style: const TextStyle(color: Colors.white),
-                  placeholderStyle: const TextStyle(color: Colors.white38),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF2C2C2E),
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // TITULO AVATARS
-            const Padding(
-              padding: EdgeInsets.only(left: 8, bottom: 8),
-              child: Text(
-                'Elegí tu avatar',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-
-            // GRID AVATARS
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _avatars.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemBuilder: (context, index) {
-                final avatar = _avatars[index];
-                final seleccionado = avatar == _avatarSeleccionado;
-
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _avatarSeleccionado = avatar;
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: seleccionado
-                            ? CupertinoColors.activeBlue
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/avatars/$avatar',
+              child: ClipOval(
+                child: _avatarSeleccionado != null
+                    ? Image.asset(
+                        'assets/avatars/$_avatarSeleccionado',
                         fit: BoxFit.cover,
+                      )
+                    : const Icon(
+                        CupertinoIcons.person_fill,
+                        size: 52,
+                        color: Colors.white38,
                       ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // ================= INPUT =================
+          CupertinoFormSection.insetGrouped(
+            backgroundColor: Colors.black,
+            children: [
+              CupertinoTextFormFieldRow(
+                controller: _nombreController,
+                placeholder: 'Tu nombre',
+                style: const TextStyle(color: Colors.white),
+                placeholderStyle: const TextStyle(color: Colors.white38),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF2C2C2E),
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            'Elegí tu avatar',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // ================= GRID =================
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _avatars.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+            ),
+            itemBuilder: (context, index) {
+              final avatar = _avatars[index];
+              final seleccionado = avatar == _avatarSeleccionado;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _avatarSeleccionado = avatar;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: seleccionado ? Colors.white : Colors.transparent,
+                      width: 2,
                     ),
                   ),
-                );
-              },
-            ),
-          ],
-        ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/avatars/$avatar',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

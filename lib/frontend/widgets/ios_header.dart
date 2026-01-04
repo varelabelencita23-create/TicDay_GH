@@ -16,6 +16,15 @@ class IOSHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool tieneNombre = nombre != null && nombre!.trim().isNotEmpty;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final Color acento = isDark
+        ? Temas.AcentoColorOscuro
+        : Temas.AcentoColorClaro;
+
+    final List<Color> gradientColors = isDark
+        ? [acento, Colors.black]
+        : [acento, Colors.white];
 
     final String avatarFinal = avatar.trim().isNotEmpty
         ? avatar
@@ -24,12 +33,12 @@ class IOSHeader extends StatelessWidget {
     return SafeArea(
       bottom: false,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 26),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Temas.AcentoColorOscuro, Colors.black],
+            colors: gradientColors,
           ),
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(28),
@@ -37,9 +46,9 @@ class IOSHeader extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.6),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
+              color: Colors.black.withOpacity(isDark ? 0.6 : 0.25),
+              blurRadius: 26,
+              offset: const Offset(0, 14),
             ),
           ],
         ),
@@ -51,8 +60,8 @@ class IOSHeader extends StatelessWidget {
                 children: [
                   Text(
                     tieneNombre ? 'Hola 👋' : 'Bienvenida 👋',
-                    style: const TextStyle(
-                      color: Colors.white70,
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
@@ -63,16 +72,24 @@ class IOSHeader extends StatelessWidget {
                       nombre!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 30,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.8,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 12,
+                            color: Colors.black.withOpacity(0.4),
+                          ),
+                        ],
                       ),
                     ),
                 ],
               ),
             ),
+
+            // AVATAR
             GestureDetector(
               onTap: onAvatarTap,
               child: Container(

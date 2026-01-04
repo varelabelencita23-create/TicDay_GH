@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:ticday/frontend/vistas/perfil_vista.dart';
 
 class IOSDrawer extends StatelessWidget {
@@ -11,30 +10,41 @@ class IOSDrawer extends StatelessWidget {
     return Drawer(
       backgroundColor: const Color(0xFF1C1C1E),
       child: SafeArea(
+        top: true,
+        bottom: true,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
               child: Row(
                 children: const [
                   CircleAvatar(
-                    radius: 22,
+                    radius: 24,
                     backgroundColor: Color(0xFF2C2C2E),
                     child: Icon(
                       CupertinoIcons.person_fill,
                       color: Colors.white,
+                      size: 26,
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Text(
-                    'Hola 👋',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hola!',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Bienvenido a TicDay',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -42,13 +52,11 @@ class IOSDrawer extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // PERFIL
             _DrawerItem(
               icon: CupertinoIcons.person,
               label: 'Perfil',
               onTap: () {
-                Navigator.pop(context); // cerrar drawer
-
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   CupertinoPageRoute(builder: (_) => const PerfilVista()),
@@ -56,7 +64,6 @@ class IOSDrawer extends StatelessWidget {
               },
             ),
 
-            // TEMA
             _DrawerItem(
               icon: CupertinoIcons.paintbrush,
               label: 'Tema',
@@ -67,11 +74,10 @@ class IOSDrawer extends StatelessWidget {
 
             const Spacer(),
 
-            // FOOTER
             const Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.only(bottom: 20),
               child: Text(
-                'TicDay · v1.0',
+                'TicDay · 2025',
                 style: TextStyle(color: Colors.white38, fontSize: 12),
               ),
             ),
@@ -81,10 +87,6 @@ class IOSDrawer extends StatelessWidget {
     );
   }
 }
-
-/* ===========================================================
-   ITEM
-   =========================================================== */
 
 class _DrawerItem extends StatelessWidget {
   final IconData icon;
@@ -99,18 +101,29 @@ class _DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(
-        label,
-        style: const TextStyle(color: Colors.white, fontSize: 16),
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+            const Icon(
+              CupertinoIcons.chevron_right,
+              color: Colors.white38,
+              size: 18,
+            ),
+          ],
+        ),
       ),
-      trailing: const Icon(
-        CupertinoIcons.chevron_right,
-        color: Colors.white38,
-        size: 18,
-      ),
-      onTap: onTap,
     );
   }
 }

@@ -7,6 +7,7 @@ import '../../backend/modelos/tarea_modelo.dart';
 import '../widgets/tarjeta_tarea.dart';
 import '../temas/temas.dart';
 import '../widgets/iconos_categorias.dart';
+import 'package:ticday/frontend/widgets/ios_menu.dart';
 
 class InicioVista extends StatefulWidget {
   const InicioVista({super.key});
@@ -36,51 +37,30 @@ class _InicioVistaState extends State<InicioVista> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Temas.FondoOscuro,
-      appBar: AppBar(
-        title: const Text("Mis tareas"),
-        backgroundColor: Temas.FondoOscuro,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sort_by_alpha),
-            onPressed: () => setState(() => ordenarAZ = true),
-          ),
-          IconButton(
-            icon: const Icon(Icons.schedule),
-            onPressed: () => setState(() => ordenarAZ = false),
-          ),
-        ],
-      ),
-      body: StreamBuilder<List<Tarea>>(
-        stream: _servicio.obtenerTareasUsuario(usuarioId),
-        builder: (context, snap) {
-          if (!snap.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return StreamBuilder<List<Tarea>>(
+      stream: _servicio.obtenerTareasUsuario(usuarioId),
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          final tareas = _ordenar(snap.data!);
-          final hoy = tareas
-              .where((t) => DateUtils.isSameDay(t.creadoEl, DateTime.now()))
-              .toList();
-          final pendientes = tareas.where((t) => !t.completado).toList();
-          final completas = tareas.where((t) => t.completado).toList();
+        final tareas = _ordenar(snap.data!);
+        final hoy = tareas
+            .where((t) => DateUtils.isSameDay(t.creadoEl, DateTime.now()))
+            .toList();
+        final pendientes = tareas.where((t) => !t.completado).toList();
+        final completas = tareas.where((t) => t.completado).toList();
 
-          return ListView(
-            children: [
-              _seccionHoy(hoy),
-              _seccionExpandable("Pendientes", pendientes),
-              _seccionExpandable("Completadas", completas),
-              const SizedBox(height: 110),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Temas.AcentoColorOscuro,
-        child: const Icon(Icons.add),
-        onPressed: () => _mostrarBottomSheet(context),
-      ),
+        return ListView(
+          padding: const EdgeInsets.only(top: kToolbarHeight + 12),
+          children: [
+            _seccionHoy(hoy),
+            _seccionExpandable("Pendientes", pendientes),
+            _seccionExpandable("Completadas", completas),
+            const SizedBox(height: 110),
+          ],
+        );
+      },
     );
   }
 
@@ -159,8 +139,6 @@ class _InicioVistaState extends State<InicioVista> {
       child: Text("No hay tareas aún", style: TextStyle(color: Colors.white54)),
     );
   }
-
-  // ---------------- BOTTOM SHEET (ADD / EDIT) ----------------
 
   // ---------------- BOTTOM SHEET (ADD / EDIT) ----------------
 

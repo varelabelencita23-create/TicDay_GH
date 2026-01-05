@@ -36,11 +36,13 @@ class _SplashVistaState extends State<SplashVista>
 
     _controller.forward();
 
-    // ⏱ duración total del splash
+    // ⏱ Splash → MainLayout
     Timer(const Duration(milliseconds: 3000), () {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainLayout()));
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const MainLayout(uid: 'demo-user')),
+      );
     });
   }
 
@@ -58,11 +60,7 @@ class _SplashVistaState extends State<SplashVista>
           gradient: RadialGradient(
             center: Alignment(0.0, -0.1),
             radius: 1.1,
-            colors: [
-              Color(0xFF4E02FF), // violeta acento (centro)
-              Color(0xFF1A1A1A), // gris oscuro
-              Color(0xFF0B0B0B), // negro profundo (bordes)
-            ],
+            colors: [Color(0xFF4E02FF), Color(0xFF1A1A1A), Color(0xFF0B0B0B)],
             stops: [0.0, 0.45, 1.0],
           ),
         ),

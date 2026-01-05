@@ -88,7 +88,6 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
 
             const SizedBox(height: 24),
 
-            // ---------------- GRAFICO ----------------
             StreamBuilder<List<double>>(
               stream: _controlador.obtenerEstadisticaMensual(
                 usuarioId,

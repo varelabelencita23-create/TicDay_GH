@@ -1,11 +1,10 @@
 import '../servicios/tareas_servicio.dart';
-import '../servicios/usuario_servicio.dart';
+import '../estado/usuario_estado.dart';
 import '../modelos/tarea_modelo.dart';
 import '../modelos/usuario_modelo.dart';
 
 class InicioControlador {
   final TareasServicio _tareasServicio = TareasServicio();
-  final UsuarioServicio _usuarioServicio = UsuarioServicio();
 
   /// Tareas del día (máx 20)
   Stream<List<Tarea>> obtenerTareasDelDia(String usuarioId) {
@@ -40,7 +39,7 @@ class InicioControlador {
     });
   }
 
-  /// Actualizar estado (completar o descompletar)
+  /// Actualizar estado
   Future<void> actualizarEstadoTarea(Tarea tarea, bool completado) async {
     final tareaActualizada = tarea.copiaCon(
       completado: completado,
@@ -55,8 +54,8 @@ class InicioControlador {
     await _tareasServicio.borrarTarea(id);
   }
 
-  /// Obtener usuario (nombre, avatar, tema)
-  Stream<Usuario?> obtenerNombreUsuario(String uid) {
-    return _usuarioServicio.obtenerUsuario(uid);
+  /// Usuario actual (para header)
+  UsuarioModelo? obtenerUsuarioActual() {
+    return usuarioNotifier.value;
   }
 }

@@ -1,118 +1,137 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../temas/temas.dart';
 
 class IOSHeader extends StatelessWidget {
-  final String? nombre;
+  final String nombre;
   final String avatar;
-  final VoidCallback onAvatarTap;
+  final double collapseFactor;
 
   const IOSHeader({
     super.key,
     required this.nombre,
     required this.avatar,
-    required this.onAvatarTap,
+    required this.collapseFactor,
   });
+
+  static const List<String> _frases = [
+    "La constancia convierte días normales en resultados extraordinarios.",
+    "No se trata de ganas, se trata de hábitos.",
+    "Cada día suma identidad.",
+    "El progreso silencioso siempre gana.",
+    "Hoy también cuenta.",
+    "La disciplina simplifica las decisiones.",
+    "La repetición construye excelencia.",
+    "La mejora diaria es una ventaja injusta.",
+    "El foco transforma el esfuerzo.",
+    "No pares cuando es cómodo.",
+    "La acción constante supera la motivación.",
+    "El compromiso diario crea confianza.",
+    "Menos excusas, mejores procesos.",
+    "El progreso ama la paciencia.",
+    "Seguir también es avanzar.",
+    "La identidad se entrena.",
+    "La disciplina compra libertad.",
+    "El progreso no necesita aplausos.",
+    "Hoy construye tu estándar.",
+    "La constancia no falla.",
+    "El hábito correcto empuja solo.",
+    "La claridad llega después de empezar.",
+    "Lo simple repetido gana.",
+    "Cada acción deja huella.",
+    "El enfoque es poder.",
+    "La mejora real no hace ruido.",
+    "No es intensidad, es continuidad.",
+    "El progreso se acumula.",
+    "La estructura vence al caos.",
+    "Hoy suma aunque no brille.",
+    "La disciplina ordena la mente.",
+  ];
+
+  String _fraseDelDia() {
+    final dia = DateTime.now().day;
+    return _frases[(dia - 1) % _frases.length];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final bool tieneNombre = nombre != null && nombre!.trim().isNotEmpty;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
     final Color acento = isDark
         ? Temas.AcentoColorOscuro
         : Temas.AcentoColorClaro;
 
-    final List<Color> gradientColors = isDark
-        ? [acento, Colors.black]
-        : [acento, Colors.white];
+    final bool expandido = collapseFactor < 0.5;
 
-    final String avatarFinal = avatar.trim().isNotEmpty
-        ? avatar
-        : 'assets/avatars/avatar7.png';
+    final double avatarSize = lerpDouble(56, 40, collapseFactor)!;
+    final double titleSize = lerpDouble(34, 22, collapseFactor)!;
 
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: gradientColors,
-          ),
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(28),
-            bottomRight: Radius.circular(28),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.6 : 0.25),
-              blurRadius: 26,
-              offset: const Offset(0, 14),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    tieneNombre ? 'Hola 👋' : 'Bienvenida 👋',
-                    style: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        lerpDouble(70, 14, collapseFactor)!,
+        20,
+        16,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// FILA SUPERIOR (nombre + avatar)
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  nombre,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.6,
                   ),
-                  const SizedBox(height: 6),
-                  if (tieneNombre)
-                    Text(
-                      nombre!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.8,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 12,
-                            color: Colors.black.withOpacity(0.4),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
+                ),
               ),
-            ),
-
-            // AVATAR
-            GestureDetector(
-              onTap: onAvatarTap,
-              child: Container(
-                width: 56,
-                height: 56,
+              const SizedBox(width: 12),
+              Container(
+                width: avatarSize,
+                height: avatarSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
-                      blurRadius: 14,
-                      offset: const Offset(0, 8),
+                      color: Colors.black.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
                 child: ClipOval(
-                  child: Image.asset(avatarFinal, fit: BoxFit.cover),
+                  child: Image.asset(
+                    avatar.isNotEmpty ? avatar : 'assets/avatars/avatar7.png',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          if (expandido)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                _fraseDelDia(),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 15,
+                  height: 1.35,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

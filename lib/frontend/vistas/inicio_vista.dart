@@ -40,11 +40,25 @@ class _InicioVistaState extends State<InicioVista> {
     return StreamBuilder<List<Tarea>>(
       stream: _servicio.obtenerTareasUsuario(usuarioId),
       builder: (context, snap) {
-        if (!snap.hasData) {
+        // 1️⃣ ERROR → mostralo
+        if (snap.hasError) {
+          return Center(
+            child: Text(
+              "Error cargando tareas 😵\n${snap.error}",
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
+
+        // 2️⃣ LOADING REAL (solo mientras conecta)
+        if (snap.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final tareas = _ordenar(snap.data!);
+        // 3️⃣ DATA (aunque esté vacía)
+        final tareas = _ordenar(snap.data ?? []);
+
         final hoy = tareas
             .where((t) => DateUtils.isSameDay(t.creadoEl, DateTime.now()))
             .toList();

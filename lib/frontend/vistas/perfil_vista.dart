@@ -1,16 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:ticday/backend/controladores/perfil_controlador.dart';
+import 'package:ticday/backend/controladores/usuario_controlador.dart';
 
 class PerfilVista extends StatefulWidget {
-  const PerfilVista({super.key});
+  final String uid;
 
+  const PerfilVista({super.key, required this.uid});
   @override
   State<PerfilVista> createState() => _PerfilVistaState();
 }
 
 class _PerfilVistaState extends State<PerfilVista> {
-  final PerfilControlador _controlador = PerfilControlador();
+  final UsuarioControlador _controlador = UsuarioControlador();
   final TextEditingController _nombreController = TextEditingController();
 
   String? _avatarSeleccionado;
@@ -24,21 +25,29 @@ class _PerfilVistaState extends State<PerfilVista> {
   @override
   void initState() {
     super.initState();
-    _cargarPerfil();
+    _cargarUsuario();
   }
 
-  Future<void> _cargarPerfil() async {
-    await _controlador.cargarPerfil();
-    final perfil = _controlador.perfil;
+  // ================= CARGAR USUARIO =================
+  Future<void> _cargarUsuario() async {
+    await _controlador.cargarUsuario(widget.uid);
 
-    if (perfil != null) {
-      _nombreController.text = perfil.nombre;
-      _avatarSeleccionado = perfil.avatar.isNotEmpty ? perfil.avatar : null;
+    final usuario = _controlador.usuario;
+
+    if (usuario != null) {
+      _nombreController.text = usuario.nombre;
+      _avatarSeleccionado =
+          usuario.iconoAvatar != null && usuario.iconoAvatar!.isNotEmpty
+          ? usuario.iconoAvatar
+          : null;
     }
 
-    setState(() => _cargando = false);
+    if (mounted) {
+      setState(() => _cargando = false);
+    }
   }
 
+  // ================= GUARDAR =================
   Future<void> _guardarPerfil() async {
     final nombre = _nombreController.text.trim();
 
@@ -52,15 +61,22 @@ class _PerfilVistaState extends State<PerfilVista> {
       return;
     }
 
-    await _controlador.actualizarPerfil(
-      nombre: nombre,
-      avatar: _avatarSeleccionado!,
-    );
+    final usuario = _controlador.usuario;
+
+    if (usuario != null) {
+      await _controlador.actualizarUsuario(
+        uid: usuario.id,
+        nombre: nombre,
+        avatar: _avatarSeleccionado,
+        tema: usuario.tema,
+      );
+    }
 
     if (!mounted) return;
     Navigator.pop(context);
   }
 
+  // ================= ALERTA =================
   void _mostrarAlerta(String titulo, String mensaje) {
     showCupertinoDialog(
       context: context,
@@ -78,6 +94,7 @@ class _PerfilVistaState extends State<PerfilVista> {
     );
   }
 
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     if (_cargando) {
@@ -162,7 +179,7 @@ class _PerfilVistaState extends State<PerfilVista> {
 
           const SizedBox(height: 12),
 
-          // ================= GRID =================
+          // ================= GRID AVATARES =================
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),

@@ -4,10 +4,12 @@ import '../modelos/tarea_modelo.dart';
 class TareasServicio {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  CollectionReference get _ref => _db.collection('tareas');
+
   /// Crear tarea
   Future<void> crearTarea(Tarea tarea) async {
     try {
-      await _db.collection("tareas").add(tarea.aMapa());
+      await _ref.add(tarea.aMapa());
     } catch (e) {
       throw Exception("Error al crear tarea: $e");
     }
@@ -15,24 +17,24 @@ class TareasServicio {
 
   /// Obtener tareas del usuario
   Stream<List<Tarea>> obtenerTareasUsuario(String usuarioId) {
-    return _db
-        .collection("tareas")
-        .where("usuarioId", isEqualTo: usuarioId)
+    return _ref
+        .where('usuarioId', isEqualTo: usuarioId)
+        .orderBy('creadoEl', descending: true)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs.map((doc) {
-            return Tarea.desdeMapa(doc.data(), doc.id);
+            return Tarea.desdeMapa(doc.data() as Map<String, dynamic>, doc.id);
           }).toList();
         });
   }
 
   /// Actualizar tarea
   Future<void> actualizarTarea(Tarea tarea) async {
-    await _db.collection("tareas").doc(tarea.id).update(tarea.aMapa());
+    await _ref.doc(tarea.id).update(tarea.aMapa());
   }
 
-  /// Borrar tarea
+  /// Borrar tareas
   Future<void> borrarTarea(String id) async {
-    await _db.collection("tareas").doc(id).delete();
+    await _ref.doc(id).delete();
   }
 }

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:ticday/frontend/vistas/perfil_vista.dart';
 
 class IOSDrawer extends StatelessWidget {
-  const IOSDrawer({super.key});
+  final String uid;
 
+  const IOSDrawer({super.key, required this.uid});
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -59,7 +60,7 @@ class IOSDrawer extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  CupertinoPageRoute(builder: (_) => const PerfilVista()),
+                  CupertinoPageRoute(builder: (_) => PerfilVista(uid: uid)),
                 );
               },
             ),

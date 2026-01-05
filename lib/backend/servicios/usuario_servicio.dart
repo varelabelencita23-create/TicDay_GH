@@ -1,66 +1,41 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../modelos/usuario_modelo.dart';
-import 'firebase_servicio.dart';
+import '../estado/usuario_estado.dart';
 
 class UsuarioServicio {
-  final _firebase = FirebaseServicio();
+  static const _keyNombre = 'usuario_nombre';
+  static const _keyAvatar = 'usuario_avatar';
+  static const _keyTema = 'usuario_tema';
 
-  /// Crear o actualizar usuario
-  Future<void> guardarUsuario(Usuario usuario) async {
-    try {
-      await _firebase
-          .coleccion("usuarios")
-          .doc(usuario.id)
-          .set(usuario.aMapa(), SetOptions(merge: true));
-    } catch (e) {
-      throw Exception("Error al guardar usuario: $e");
-    }
+  static Future<UsuarioModelo?> obtenerUsuario(String uid) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final nombre = prefs.getString(_keyNombre);
+    if (nombre == null) return null;
+
+    final avatar = prefs.getString(_keyAvatar);
+    final tema = prefs.getString(_keyTema) ?? 'light';
+
+    final usuario = UsuarioModelo(
+      id: uid,
+      nombre: nombre,
+      iconoAvatar: avatar,
+      tema: tema,
+    );
+
+    usuarioNotifier.value = usuario;
+    return usuario;
   }
 
-  /// Obtener datos de usuario
-  Stream<Usuario?> obtenerUsuario(String usuarioId) {
-    try {
-      return _firebase.coleccion("usuarios").doc(usuarioId).snapshots().map((
-        doc,
-      ) {
-        if (doc.exists) {
-          return Usuario.desdeMapa(doc.data() as Map<String, dynamic>, doc.id);
-        }
-        return null;
-      });
-    } catch (e) {
-      throw Exception("Error al obtener usuario: $e");
-    }
-  }
+  static Future<void> guardarUsuario(UsuarioModelo usuario) async {
+    final prefs = await SharedPreferences.getInstance();
 
-  /// Actualizar solo el nombre
-  Future<void> actualizarNombre(String id, String nuevoNombre) async {
-    try {
-      await _firebase.coleccion("usuarios").doc(id).update({
-        "nombre": nuevoNombre,
-      });
-    } catch (e) {
-      throw Exception("Error al actualizar nombre: $e");
+    await prefs.setString(_keyNombre, usuario.nombre);
+    if (usuario.iconoAvatar != null) {
+      await prefs.setString(_keyAvatar, usuario.iconoAvatar!);
     }
-  }
+    await prefs.setString(_keyTema, usuario.tema);
 
-  /// Actualizar tema (dark/light)
-  Future<void> actualizarTema(String id, String modo) async {
-    try {
-      await _firebase.coleccion("usuarios").doc(id).update({"tema": modo});
-    } catch (e) {
-      throw Exception("Error al actualizar tema: $e");
-    }
-  }
-
-  /// Actualizar icono de usuario
-  Future<void> actualizarIcono(String id, String icono) async {
-    try {
-      await _firebase.coleccion("usuarios").doc(id).update({
-        "iconoAvatar": icono,
-      });
-    } catch (e) {
-      throw Exception("Error al actualizar icono: $e");
-    }
+    usuarioNotifier.value = usuario;
   }
 }

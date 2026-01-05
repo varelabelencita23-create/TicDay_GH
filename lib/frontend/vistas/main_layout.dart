@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'inicio_vista.dart';
 import 'agregar_tarea_vista.dart';
 import 'estadisticas_vista.dart';
-
+import '../../backend/estado/usuario_estado.dart';
+import '../../backend/modelos/usuario_modelo.dart';
 import '../temas/temas.dart';
 import '../widgets/ios_menu.dart';
 import '../widgets/ios_header.dart';
 
 class MainLayout extends StatefulWidget {
-  const MainLayout({super.key});
+  final String uid;
+
+  const MainLayout({super.key, required this.uid});
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
@@ -19,13 +22,11 @@ class _MainLayoutState extends State<MainLayout> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _indexActual = 0;
 
-  late final List<Widget> _vistas;
-
-  @override
-  void initState() {
-    super.initState();
-    _vistas = const [InicioVista(), AgregarTareaVista(), EstadisticasVista()];
-  }
+  final List<Widget> _vistas = const [
+    InicioVista(),
+    AgregarTareaVista(),
+    EstadisticasVista(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -33,40 +34,20 @@ class _MainLayoutState extends State<MainLayout> {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const IOSDrawer(),
+
+      drawer: IOSDrawer(uid: widget.uid),
+
       backgroundColor: isDark ? Temas.FondoOscuro : Temas.FondoClaro,
 
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 160,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                _scaffoldKey.currentState?.openDrawer();
-              },
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.parallax,
-              background: IOSHeader(
-                nombre: "Belu", // luego viene del perfil
-                avatar: "",
-                onAvatarTap: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-              ),
-            ),
-          ),
+      body: _indexActual == 0 ? _homeConHeader(context) : _vistas[_indexActual],
 
-          SliverFillRemaining(
-            hasScrollBody: true,
-            child: _vistas[_indexActual],
-          ),
-        ],
-      ),
+      floatingActionButton: _indexActual == 0
+          ? FloatingActionButton(
+              backgroundColor: Temas.AcentoColorOscuro,
+              onPressed: () => setState(() => _indexActual = 1),
+              child: const Icon(Icons.add),
+            )
+          : null,
 
       bottomNavigationBar: NavigationBar(
         height: 65,
@@ -94,6 +75,50 @@ class _MainLayoutState extends State<MainLayout> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _homeConHeader(BuildContext context) {
+    return NestedScrollView(
+      headerSliverBuilder: (_, __) {
+        return [
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 170,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final max = 170.0;
+                final min = kToolbarHeight + 24;
+                final t = ((max - constraints.maxHeight) / (max - min)).clamp(
+                  0.0,
+                  1.0,
+                );
+
+                return ValueListenableBuilder<UsuarioModelo?>(
+                  valueListenable: usuarioNotifier,
+                  builder: (context, usuario, _) {
+                    final nombre = usuario?.nombre ?? "Hola";
+                    final avatar = usuario?.iconoAvatar ?? "";
+
+                    return IOSHeader(
+                      nombre: nombre,
+                      avatar: avatar,
+                      collapseFactor: t,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ];
+      },
+      body: const InicioVista(),
     );
   }
 }

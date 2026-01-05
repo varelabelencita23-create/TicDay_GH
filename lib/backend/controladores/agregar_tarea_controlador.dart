@@ -1,20 +1,34 @@
-import '../servicios/tareas_servicio.dart';
 import '../modelos/tarea_modelo.dart';
+import '../servicios/tareas_servicio.dart';
 
 class AgregarTareaControlador {
-  final TareasServicio _tareasServicio = TareasServicio();
+  final TareasServicio _servicio = TareasServicio();
 
-  /// Crear tarea
-  Future<void> crearTarea(Tarea tarea) async {
-    await _tareasServicio.crearTarea(tarea);
+  Future<void> crearTarea({
+    required String titulo,
+    String? descripcion,
+    DateTime? horaInicio,
+    DateTime? horaFin,
+    int? duracionMinutos,
+    String? icono,
+    required String usuarioId,
+  }) async {
+    final tarea = Tarea(
+      id: '', // Firestore lo genera
+      titulo: titulo,
+      descripcion: descripcion,
+      horaInicio: horaInicio,
+      horaFin: horaFin,
+      duracionMinutos: duracionMinutos,
+      icono: icono,
+      completado: false,
+      creadoEl: DateTime.now(),
+      usuarioId: usuarioId,
+    );
+
+    await _servicio.crearTarea(tarea);
   }
 
-  /// Editar tarea
-  Future<void> actualizarTarea(Tarea tarea) async {
-    await _tareasServicio.actualizarTarea(tarea);
-  }
-
-  /// Calcular duración (según inicio/fin)
   Duration calcularDuracion(DateTime inicio, DateTime fin) {
     return fin.difference(inicio);
   }

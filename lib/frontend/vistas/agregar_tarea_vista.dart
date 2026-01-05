@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ticday/frontend/temas/temas.dart';
-import '../../backend/modelos/tarea_modelo.dart';
 import '../../backend/controladores/agregar_tarea_controlador.dart';
-import 'package:uuid/uuid.dart';
-import 'package:ticday/frontend/widgets/ios_menu.dart';
 
 class AgregarTareaVista extends StatefulWidget {
   const AgregarTareaVista({super.key});
@@ -56,31 +53,41 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
 
     setState(() => _guardando = true);
 
-    final tarea = Tarea(
-      id: const Uuid().v4(),
-      titulo: _tituloCtrl.text.trim(),
-      descripcion: _descripcionCtrl.text.trim().isEmpty
-          ? null
-          : _descripcionCtrl.text.trim(),
-      horaInicio: _horaInicio,
-      horaFin: _horaFin,
-      duracionMinutos: (_horaInicio != null && _horaFin != null)
-          ? _ctrl.calcularDuracion(_horaInicio!, _horaFin!).inMinutes
-          : null,
-      icono: _categoriaSeleccionada,
-      completado: false,
-      creadoEl: DateTime.now(),
-      usuarioId: "usuario_demo",
-    );
-
     try {
-      await _ctrl.crearTarea(tarea);
-      if (mounted) Navigator.pop(context);
+      await _ctrl.crearTarea(
+        titulo: _tituloCtrl.text.trim(),
+        descripcion: _descripcionCtrl.text.trim().isEmpty
+            ? null
+            : _descripcionCtrl.text.trim(),
+        horaInicio: _horaInicio,
+        horaFin: _horaFin,
+        duracionMinutos: (_horaInicio != null && _horaFin != null)
+            ? _ctrl.calcularDuracion(_horaInicio!, _horaFin!).inMinutes
+            : null,
+        icono: _categoriaSeleccionada!,
+        usuarioId: "usuario_demo",
+      );
+
+      //limpiar el formulario
+      _tituloCtrl.clear();
+      _descripcionCtrl.clear();
+      setState(() {
+        _horaInicio = null;
+        _horaFin = null;
+        _categoriaSeleccionada = null;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Tarea guardada")));
     } catch (e) {
       _mostrarError("Error al guardar la tarea");
+    } finally {
+      if (mounted) setState(() => _guardando = false);
     }
   }
 
+  //picker hora
   Future<DateTime?> _pickHora() async {
     final time = await showTimePicker(
       context: context,
@@ -111,7 +118,6 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
     return Scaffold(
       backgroundColor: Temas.FondoOscuro,
       appBar: AppBar(backgroundColor: Temas.FondoOscuro),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -251,7 +257,6 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
                 onPressed: _guardando ? null : _guardarTarea,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Temas.AcentoColorOscuro,
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

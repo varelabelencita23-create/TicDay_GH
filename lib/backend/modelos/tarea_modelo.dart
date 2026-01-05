@@ -23,12 +23,12 @@ class Tarea {
     required this.usuarioId,
   });
 
-  /// ---------- FROM MAP ----------
+  //from map
   factory Tarea.desdeMapa(Map<String, dynamic> mapa, String id) {
     return Tarea(
       id: id,
       titulo: mapa["titulo"],
-      descripcion: mapa["descripcion"], // ← agregado
+      descripcion: mapa["descripcion"],
       horaInicio: mapa["horaInicio"] != null
           ? DateTime.parse(mapa["horaInicio"])
           : null,

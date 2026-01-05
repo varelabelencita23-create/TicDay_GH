@@ -28,26 +28,25 @@ class _PerfilVistaState extends State<PerfilVista> {
     _cargarUsuario();
   }
 
-  // ================= CARGAR USUARIO =================
   Future<void> _cargarUsuario() async {
-    await _controlador.cargarUsuario(widget.uid);
+    try {
+      await _controlador.cargarUsuario(widget.uid);
 
-    final usuario = _controlador.usuario;
+      final usuario = _controlador.usuario;
 
-    if (usuario != null) {
-      _nombreController.text = usuario.nombre;
-      _avatarSeleccionado =
-          usuario.iconoAvatar != null && usuario.iconoAvatar!.isNotEmpty
-          ? usuario.iconoAvatar
-          : null;
-    }
-
-    if (mounted) {
-      setState(() => _cargando = false);
+      if (usuario != null) {
+        _nombreController.text = usuario.nombre;
+        _avatarSeleccionado = usuario.iconoAvatar;
+      }
+    } catch (e) {
+      debugPrint('Error cargando usuario: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _cargando = false);
+      }
     }
   }
 
-  // ================= GUARDAR =================
   Future<void> _guardarPerfil() async {
     final nombre = _nombreController.text.trim();
 
@@ -61,22 +60,17 @@ class _PerfilVistaState extends State<PerfilVista> {
       return;
     }
 
-    final usuario = _controlador.usuario;
-
-    if (usuario != null) {
-      await _controlador.actualizarUsuario(
-        uid: usuario.id,
-        nombre: nombre,
-        avatar: _avatarSeleccionado,
-        tema: usuario.tema,
-      );
-    }
+    await _controlador.actualizarUsuario(
+      uid: widget.uid,
+      nombre: nombre,
+      avatar: _avatarSeleccionado!,
+      tema: _controlador.usuario?.tema ?? 'light',
+    );
 
     if (!mounted) return;
     Navigator.pop(context);
   }
 
-  // ================= ALERTA =================
   void _mostrarAlerta(String titulo, String mensaje) {
     showCupertinoDialog(
       context: context,
@@ -94,7 +88,6 @@ class _PerfilVistaState extends State<PerfilVista> {
     );
   }
 
-  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     if (_cargando) {
@@ -123,7 +116,6 @@ class _PerfilVistaState extends State<PerfilVista> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // ================= AVATAR PRINCIPAL =================
           Center(
             child: Container(
               width: 120,
@@ -149,7 +141,6 @@ class _PerfilVistaState extends State<PerfilVista> {
 
           const SizedBox(height: 28),
 
-          // ================= INPUT =================
           CupertinoFormSection.insetGrouped(
             backgroundColor: Colors.black,
             children: [
@@ -179,7 +170,6 @@ class _PerfilVistaState extends State<PerfilVista> {
 
           const SizedBox(height: 12),
 
-          // ================= GRID AVATARES =================
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),

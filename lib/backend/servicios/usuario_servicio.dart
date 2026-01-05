@@ -1,26 +1,19 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../modelos/usuario_modelo.dart';
 import '../estado/usuario_estado.dart';
 
 class UsuarioServicio {
-  static const _keyNombre = 'usuario_nombre';
-  static const _keyAvatar = 'usuario_avatar';
-  static const _keyTema = 'usuario_tema';
+  static final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static const String _coleccion = 'usuarios';
 
   static Future<UsuarioModelo?> obtenerUsuario(String uid) async {
-    final prefs = await SharedPreferences.getInstance();
+    final doc = await _db.collection(_coleccion).doc(uid).get();
 
-    final nombre = prefs.getString(_keyNombre);
-    if (nombre == null) return null;
+    if (!doc.exists) return null;
 
-    final avatar = prefs.getString(_keyAvatar);
-    final tema = prefs.getString(_keyTema) ?? 'light';
-
-    final usuario = UsuarioModelo(
-      id: uid,
-      nombre: nombre,
-      iconoAvatar: avatar,
-      tema: tema,
+    final usuario = UsuarioModelo.desdeMapa(
+      doc.data() as Map<String, dynamic>,
+      doc.id,
     );
 
     usuarioNotifier.value = usuario;
@@ -28,13 +21,10 @@ class UsuarioServicio {
   }
 
   static Future<void> guardarUsuario(UsuarioModelo usuario) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString(_keyNombre, usuario.nombre);
-    if (usuario.iconoAvatar != null) {
-      await prefs.setString(_keyAvatar, usuario.iconoAvatar!);
-    }
-    await prefs.setString(_keyTema, usuario.tema);
+    await _db
+        .collection(_coleccion)
+        .doc(usuario.id)
+        .set(usuario.aMapa(), SetOptions(merge: true));
 
     usuarioNotifier.value = usuario;
   }

@@ -108,8 +108,13 @@ class IOSHeader extends StatelessWidget {
                 ),
                 child: ClipOval(
                   child: Image.asset(
-                    avatar.isNotEmpty ? avatar : 'assets/avatars/avatar7.png',
+                    avatar.isNotEmpty
+                        ? 'assets/avatars/$avatar'
+                        : 'assets/avatars/avatar7.png',
                     fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) {
+                      return const Icon(Icons.person, color: Colors.white38);
+                    },
                   ),
                 ),
               ),

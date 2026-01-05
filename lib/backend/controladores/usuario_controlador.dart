@@ -17,7 +17,7 @@ class UsuarioControlador {
   Future<void> actualizarUsuario({
     required String uid,
     required String nombre,
-    String? avatar,
+    required String avatar,
     String tema = 'light',
   }) async {
     final usuario = UsuarioModelo(
@@ -28,6 +28,5 @@ class UsuarioControlador {
     );
 
     await UsuarioServicio.guardarUsuario(usuario);
-    usuarioNotifier.value = usuario;
   }
 }

@@ -1,46 +1,55 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ticday/frontend/vistas/perfil_vista.dart';
+import 'package:ticday/backend/controladores/usuario_controlador.dart';
+import 'package:ticday/backend/estado/usuario_estado.dart';
+import 'package:ticday/backend/estado/tema_estado.dart';
 
 class IOSDrawer extends StatelessWidget {
   final String uid;
 
   const IOSDrawer({super.key, required this.uid});
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Drawer(
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: theme.scaffoldBackgroundColor,
       child: SafeArea(
-        top: true,
-        bottom: true,
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
               child: Row(
-                children: const [
+                children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: Color(0xFF2C2C2E),
+                    backgroundColor: theme.cardColor,
                     child: Icon(
                       CupertinoIcons.person_fill,
-                      color: Colors.white,
+                      color: theme.textTheme.bodyLarge?.color,
                       size: 26,
                     ),
                   ),
-                  SizedBox(width: 14),
+                  const SizedBox(width: 14),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Hola!',
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                        style: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                            0.7,
+                          ),
+                          fontSize: 14,
+                        ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'Bienvenido a TicDay',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: theme.textTheme.bodyLarge?.color,
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
                         ),
@@ -50,8 +59,6 @@ class IOSDrawer extends StatelessWidget {
                 ],
               ),
             ),
-
-            const SizedBox(height: 12),
 
             _DrawerItem(
               icon: CupertinoIcons.person,
@@ -70,16 +77,64 @@ class IOSDrawer extends StatelessWidget {
               label: 'Tema',
               onTap: () {
                 Navigator.pop(context);
+                showCupertinoModalPopup(
+                  context: context,
+                  builder: (_) => CupertinoActionSheet(
+                    title: const Text('Elegí un tema'),
+                    actions: [
+                      CupertinoActionSheetAction(
+                        child: const Text('Modo claro'),
+                        onPressed: () async {
+                          final usuario = usuarioNotifier.value;
+                          if (usuario != null) {
+                            temaNotifier.value = ThemeMode.light;
+                            await UsuarioControlador().actualizarUsuario(
+                              uid: usuario.id,
+                              nombre: usuario.nombre,
+                              avatar: usuario.iconoAvatar,
+                              tema: 'light',
+                            );
+                          }
+                          Navigator.pop(context);
+                        },
+                      ),
+                      CupertinoActionSheetAction(
+                        child: const Text('Modo oscuro'),
+                        onPressed: () async {
+                          final usuario = usuarioNotifier.value;
+                          if (usuario != null) {
+                            temaNotifier.value = ThemeMode.dark;
+                            await UsuarioControlador().actualizarUsuario(
+                              uid: usuario.id,
+                              nombre: usuario.nombre,
+                              avatar: usuario.iconoAvatar,
+                              tema: 'dark',
+                            );
+                          }
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                    cancelButton: CupertinoActionSheetAction(
+                      isDefaultAction: true,
+                      child: const Text('Cancelar'),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                );
               },
             ),
 
             const Spacer(),
 
-            const Padding(
-              padding: EdgeInsets.only(bottom: 20),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
               child: Text(
                 'TicDay · 2025',
-                style: TextStyle(color: Colors.white38, fontSize: 12),
+                style: TextStyle(
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4),
+                  fontSize: 12,
+                ),
               ),
             ),
           ],
@@ -102,6 +157,8 @@ class _DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: onTap,
@@ -109,17 +166,20 @@ class _DrawerItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 22),
+            Icon(icon, color: theme.textTheme.bodyLarge?.color, size: 22),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(
+                  color: theme.textTheme.bodyLarge?.color,
+                  fontSize: 16,
+                ),
               ),
             ),
-            const Icon(
+            Icon(
               CupertinoIcons.chevron_right,
-              color: Colors.white38,
+              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4),
               size: 18,
             ),
           ],

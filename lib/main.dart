@@ -3,8 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'firebase_options.dart';
-import 'frontend/vistas/main_layout.dart';
 import 'frontend/vistas/splash_vista.dart';
+import 'backend/estado/tema_estado.dart';
+import 'frontend/temas/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +22,19 @@ class TicDayFinal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(useMaterial3: true),
-      home: const SplashVista(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: temaNotifier,
+      builder: (context, themeMode, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: themeMode,
+
+          home: const SplashVista(),
+        );
+      },
     );
   }
 }

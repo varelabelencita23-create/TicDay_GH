@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../temas/temas.dart';
 
 class IOSHeader extends StatelessWidget {
   final String nombre;
@@ -20,32 +19,6 @@ class IOSHeader extends StatelessWidget {
     "Cada día suma identidad.",
     "El progreso silencioso siempre gana.",
     "Hoy también cuenta.",
-    "La disciplina simplifica las decisiones.",
-    "La repetición construye excelencia.",
-    "La mejora diaria es una ventaja injusta.",
-    "El foco transforma el esfuerzo.",
-    "No pares cuando es cómodo.",
-    "La acción constante supera la motivación.",
-    "El compromiso diario crea confianza.",
-    "Menos excusas, mejores procesos.",
-    "El progreso ama la paciencia.",
-    "Seguir también es avanzar.",
-    "La identidad se entrena.",
-    "La disciplina compra libertad.",
-    "El progreso no necesita aplausos.",
-    "Hoy construye tu estándar.",
-    "La constancia no falla.",
-    "El hábito correcto empuja solo.",
-    "La claridad llega después de empezar.",
-    "Lo simple repetido gana.",
-    "Cada acción deja huella.",
-    "El enfoque es poder.",
-    "La mejora real no hace ruido.",
-    "No es intensidad, es continuidad.",
-    "El progreso se acumula.",
-    "La estructura vence al caos.",
-    "Hoy suma aunque no brille.",
-    "La disciplina ordena la mente.",
   ];
 
   String _fraseDelDia() {
@@ -55,10 +28,8 @@ class IOSHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color acento = isDark
-        ? Temas.AcentoColorOscuro
-        : Temas.AcentoColorClaro;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     final bool expandido = collapseFactor < 0.5;
 
@@ -75,7 +46,6 @@ class IOSHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// FILA SUPERIOR (nombre + avatar)
           Row(
             children: [
               Expanded(
@@ -84,7 +54,7 @@ class IOSHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: theme.textTheme.bodyLarge?.color,
                     fontSize: titleSize,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.6,
@@ -97,10 +67,13 @@ class IOSHeader extends StatelessWidget {
                 height: avatarSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(
+                    color: theme.textTheme.bodyLarge!.color!,
+                    width: 2,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.black.withOpacity(isDark ? 0.4 : 0.15),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -113,7 +86,12 @@ class IOSHeader extends StatelessWidget {
                         : 'assets/avatars/avatar7.png',
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) {
-                      return const Icon(Icons.person, color: Colors.white38);
+                      return Icon(
+                        Icons.person,
+                        color: theme.textTheme.bodyLarge?.color?.withOpacity(
+                          0.4,
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -129,7 +107,7 @@ class IOSHeader extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.9),
                   fontSize: 15,
                   height: 1.35,
                   fontWeight: FontWeight.w500,

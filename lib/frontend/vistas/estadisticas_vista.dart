@@ -21,6 +21,14 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
 
   DateTime mesSeleccionado = DateTime.now();
 
+  bool get _esOscuro => Theme.of(context).brightness == Brightness.dark;
+
+  Color get _fondo => _esOscuro ? Temas.FondoOscuro : Temas.FondoClaro;
+  Color get _widget => _esOscuro ? Temas.WidgetOscuro : Temas.WidgetClaro;
+  Color get _texto => _esOscuro ? Temas.TextOscuro : Temas.TextoClaro;
+  Color get _acento =>
+      _esOscuro ? Temas.AcentoColorOscuro : Temas.AcentoColorClaro;
+
   void _mesAnterior() {
     setState(() {
       mesSeleccionado = DateTime(
@@ -42,9 +50,12 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Temas.FondoOscuro,
-      appBar: AppBar(backgroundColor: Temas.FondoOscuro),
-
+      backgroundColor: _fondo,
+      appBar: AppBar(
+        backgroundColor: _fondo,
+        elevation: 0,
+        iconTheme: IconThemeData(color: _texto),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         child: Column(
@@ -96,21 +107,23 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
               ),
               builder: (context, snap) {
                 if (!snap.hasData) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 60),
-                    child: Center(child: CircularProgressIndicator()),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 60),
+                    child: Center(
+                      child: CircularProgressIndicator(color: _acento),
+                    ),
                   );
                 }
 
                 final datos = snap.data!;
 
                 if (datos.every((d) => d == 0)) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 60),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 60),
                     child: Center(
                       child: Text(
                         "No hay datos para este mes",
-                        style: TextStyle(color: Colors.white54),
+                        style: TextStyle(color: _texto.withOpacity(0.6)),
                       ),
                     ),
                   );

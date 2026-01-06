@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../backend/modelos/tarea_modelo.dart';
-import '../temas/temas.dart';
 import '../widgets/iconos_categorias.dart';
+import '../temas/temas.dart';
 
 class TareaTarjeta extends StatelessWidget {
   final Tarea tarea;
@@ -21,37 +21,52 @@ class TareaTarjeta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final icono = iconosCategorias[tarea.icono] ?? iconoDefault;
+
+    final Color fondo = isDark ? Temas.WidgetOscuro : Temas.WidgetClaro;
+    final Color textoPrincipal = isDark ? Temas.TextOscuro : Temas.TextoClaro;
+    final Color textoSecundario = isDark
+        ? Temas.TextOscuro.withOpacity(0.6)
+        : Temas.TextoClaro.withOpacity(0.6);
+
+    final Color acento = isDark
+        ? Temas.AcentoColorOscuro
+        : Temas.AcentoColorClaro;
 
     return Dismissible(
       key: Key(tarea.id),
       direction: DismissDirection.horizontal,
 
-      // FONDO EDITAR (derecha)
       background: Container(
         alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(left: 20),
-        color: Colors.orangeAccent,
+        padding: const EdgeInsets.only(left: 22),
+        decoration: BoxDecoration(
+          color: acento.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: const Icon(Icons.edit, color: Colors.white),
       ),
 
-      // FONDO ELIMINAR (izquierda)
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        color: Colors.redAccent,
+        padding: const EdgeInsets.only(right: 22),
+        decoration: BoxDecoration(
+          color: Colors.redAccent,
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: const Icon(Icons.delete, color: Colors.white),
       ),
 
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.startToEnd) {
-          // EDITAR
           onEditar();
           return false;
         }
 
         if (direction == DismissDirection.endToStart) {
-          // ELIMINAR con confirmación
           final ok =
               await showDialog<bool>(
                 context: context,
@@ -81,28 +96,51 @@ class TareaTarjeta extends StatelessWidget {
         return false;
       },
 
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: Temas.WidgetOscuro,
-          borderRadius: BorderRadius.circular(12),
+          color: fondo,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withOpacity(0.45)
+                  : Colors.black.withOpacity(0.08),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            // ICONO
-            Container(
-              padding: const EdgeInsets.all(6),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 4,
+              height: 72,
               decoration: BoxDecoration(
-                color: Temas.WidgetOscuro,
-                borderRadius: BorderRadius.circular(8),
+                color: tarea.completado ? acento : acento.withOpacity(0.4),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(18),
+                  bottomLeft: Radius.circular(18),
+                ),
               ),
-              child: Icon(icono, color: Colors.white, size: 18),
             ),
 
             const SizedBox(width: 10),
 
-            // TEXTO
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: acento.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icono, size: 18, color: acento),
+            ),
+
+            const SizedBox(width: 12),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,27 +150,29 @@ class TareaTarjeta extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      color: textoPrincipal,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
                       decoration: tarea.completado
                           ? TextDecoration.lineThrough
-                          : null,
+                          : TextDecoration.none,
+                      decorationColor: const Color.fromARGB(255, 0, 0, 0),
+                      decorationThickness: 2.2,
                     ),
                   ),
+
                   if (tarea.horaInicio != null && tarea.horaFin != null)
-                    Text(
-                      "${DateFormat("HH:mm").format(tarea.horaInicio!)} - ${DateFormat("HH:mm").format(tarea.horaFin!)}",
-                      style: const TextStyle(
-                        color: Colors.white60,
-                        fontSize: 11,
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        "${DateFormat("HH:mm").format(tarea.horaInicio!)} - ${DateFormat("HH:mm").format(tarea.horaFin!)}",
+                        style: TextStyle(color: textoSecundario, fontSize: 11),
                       ),
                     ),
                 ],
               ),
             ),
 
-            // CHECK
             IconButton(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
@@ -140,10 +180,8 @@ class TareaTarjeta extends StatelessWidget {
                 tarea.completado
                     ? Icons.check_circle
                     : Icons.radio_button_unchecked,
-                size: 20,
-                color: tarea.completado
-                    ? const Color(0xFF39FF14) // verde flúor
-                    : const Color.fromARGB(255, 255, 255, 255),
+                size: 22,
+                color: tarea.completado ? acento : textoSecundario,
               ),
               onPressed: onToggle,
             ),
@@ -153,4 +191,3 @@ class TareaTarjeta extends StatelessWidget {
     );
   }
 }
-

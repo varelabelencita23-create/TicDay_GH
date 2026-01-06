@@ -6,6 +6,7 @@ class PerfilVista extends StatefulWidget {
   final String uid;
 
   const PerfilVista({super.key, required this.uid});
+
   @override
   State<PerfilVista> createState() => _PerfilVistaState();
 }
@@ -33,7 +34,6 @@ class _PerfilVistaState extends State<PerfilVista> {
       await _controlador.cargarUsuario(widget.uid);
 
       final usuario = _controlador.usuario;
-
       if (usuario != null) {
         _nombreController.text = usuario.nombre;
         _avatarSeleccionado = usuario.iconoAvatar;
@@ -72,6 +72,8 @@ class _PerfilVistaState extends State<PerfilVista> {
   }
 
   void _mostrarAlerta(String titulo, String mensaje) {
+    final theme = Theme.of(context);
+
     showCupertinoDialog(
       context: context,
       builder: (_) => CupertinoAlertDialog(
@@ -80,7 +82,10 @@ class _PerfilVistaState extends State<PerfilVista> {
         actions: [
           CupertinoDialogAction(
             isDefaultAction: true,
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: TextStyle(color: theme.colorScheme.primary),
+            ),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -90,24 +95,33 @@ class _PerfilVistaState extends State<PerfilVista> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (_cargando) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CupertinoActivityIndicator()),
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: const Center(child: CupertinoActivityIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CupertinoNavigationBar(
-        backgroundColor: const Color(0xFF1C1C1E),
-        middle: const Text('Perfil', style: TextStyle(color: Colors.white)),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        border: null,
+        middle: Text(
+          'Perfil',
+          style: TextStyle(
+            color: theme.textTheme.bodyLarge?.color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         trailing: GestureDetector(
           onTap: _guardarPerfil,
-          child: const Text(
+          child: Text(
             'Guardar',
             style: TextStyle(
-              color: CupertinoColors.activeBlue,
+              color: theme.colorScheme.primary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -122,7 +136,7 @@ class _PerfilVistaState extends State<PerfilVista> {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(color: theme.colorScheme.primary, width: 2),
               ),
               child: ClipOval(
                 child: _avatarSeleccionado != null
@@ -130,10 +144,12 @@ class _PerfilVistaState extends State<PerfilVista> {
                         'assets/avatars/$_avatarSeleccionado',
                         fit: BoxFit.cover,
                       )
-                    : const Icon(
+                    : Icon(
                         CupertinoIcons.person_fill,
                         size: 52,
-                        color: Colors.white38,
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                          0.4,
+                        ),
                       ),
               ),
             ),
@@ -142,16 +158,18 @@ class _PerfilVistaState extends State<PerfilVista> {
           const SizedBox(height: 28),
 
           CupertinoFormSection.insetGrouped(
-            backgroundColor: Colors.black,
+            backgroundColor: theme.scaffoldBackgroundColor,
             children: [
               CupertinoTextFormFieldRow(
                 controller: _nombreController,
                 placeholder: 'Tu nombre',
-                style: const TextStyle(color: Colors.white),
-                placeholderStyle: const TextStyle(color: Colors.white38),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF2C2C2E),
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                placeholderStyle: TextStyle(
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4),
+                ),
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
                 ),
               ),
             ],
@@ -159,10 +177,10 @@ class _PerfilVistaState extends State<PerfilVista> {
 
           const SizedBox(height: 24),
 
-          const Text(
+          Text(
             'Elegí tu avatar',
             style: TextStyle(
-              color: Colors.white70,
+              color: theme.textTheme.bodyLarge?.color,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -194,7 +212,9 @@ class _PerfilVistaState extends State<PerfilVista> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: seleccionado ? Colors.white : Colors.transparent,
+                      color: seleccionado
+                          ? theme.colorScheme.primary
+                          : Colors.transparent,
                       width: 2,
                     ),
                   ),

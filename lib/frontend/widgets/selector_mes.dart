@@ -19,25 +19,32 @@ class SelectorMes extends StatelessWidget {
         .format(mesActual)
         .replaceFirstMapped(RegExp(r'^\w'), (m) => m.group(0)!.toUpperCase());
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final Color textoColor = isDark ? Colors.white : Colors.black87;
+
+    final Color iconoColor = isDark ? Colors.white70 : Colors.black54;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
           icon: const Icon(Icons.chevron_left),
-          color: Colors.white70,
+          color: iconoColor,
           onPressed: onAnterior,
         ),
         Text(
           texto,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: textoColor,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
         ),
         IconButton(
           icon: const Icon(Icons.chevron_right),
-          color: Colors.white70,
+          color: iconoColor,
           onPressed: onSiguiente,
         ),
       ],

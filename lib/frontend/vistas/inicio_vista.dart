@@ -5,9 +5,7 @@ import '../../backend/servicios/tareas_servicio.dart';
 import '../../backend/modelos/tarea_modelo.dart';
 
 import '../widgets/tarjeta_tarea.dart';
-import '../temas/temas.dart';
 import '../widgets/iconos_categorias.dart';
-import 'package:ticday/frontend/widgets/ios_menu.dart';
 
 class InicioVista extends StatefulWidget {
   const InicioVista({super.key});
@@ -37,10 +35,11 @@ class _InicioVistaState extends State<InicioVista> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return StreamBuilder<List<Tarea>>(
       stream: _servicio.obtenerTareasUsuario(usuarioId),
       builder: (context, snap) {
-        // 1️⃣ ERROR → mostralo
         if (snap.hasError) {
           return Center(
             child: Text(
@@ -51,12 +50,10 @@ class _InicioVistaState extends State<InicioVista> {
           );
         }
 
-        // 2️⃣ LOADING REAL (solo mientras conecta)
         if (snap.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // 3️⃣ DATA (aunque esté vacía)
         final tareas = _ordenar(snap.data ?? []);
 
         final hoy = tareas
@@ -68,9 +65,9 @@ class _InicioVistaState extends State<InicioVista> {
         return ListView(
           padding: const EdgeInsets.only(top: kToolbarHeight + 12),
           children: [
-            _seccionHoy(hoy),
-            _seccionExpandable("Pendientes", pendientes),
-            _seccionExpandable("Completadas", completas),
+            _seccionHoy(hoy, theme),
+            _seccionExpandable("Pendientes", pendientes, theme),
+            _seccionExpandable("Completadas", completas, theme),
             const SizedBox(height: 110),
           ],
         );
@@ -78,23 +75,32 @@ class _InicioVistaState extends State<InicioVista> {
     );
   }
 
-  Widget _seccionHoy(List<Tarea> tareas) {
+  // ---------------- SECCIONES ----------------
+
+  Widget _seccionHoy(List<Tarea> tareas, ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _tituloSeccion("Hoy"),
-        if (tareas.isEmpty) _textoVacio() else ...tareas.map(_tarjeta),
+        _tituloSeccion("Hoy", theme),
+        if (tareas.isEmpty) _textoVacio(theme) else ...tareas.map(_tarjeta),
       ],
     );
   }
 
-  Widget _seccionExpandable(String titulo, List<Tarea> tareas) {
+  Widget _seccionExpandable(
+    String titulo,
+    List<Tarea> tareas,
+    ThemeData theme,
+  ) {
     return ExpansionTile(
-      title: Text(titulo, style: const TextStyle(color: Colors.white)),
-      iconColor: Colors.white,
-      collapsedIconColor: Colors.white54,
+      title: Text(
+        titulo,
+        style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+      ),
+      iconColor: theme.textTheme.bodyLarge?.color,
+      collapsedIconColor: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
       children: tareas.isEmpty
-          ? [_textoVacio()]
+          ? [_textoVacio(theme)]
           : tareas.map(_tarjeta).toList(),
     );
   }
@@ -111,6 +117,36 @@ class _InicioVistaState extends State<InicioVista> {
       onEditar: () => _mostrarBottomSheet(context, tarea: t),
     );
   }
+
+  // ---------------- UI ATÓMICA ----------------
+
+  Widget _tituloSeccion(String texto, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      child: Text(
+        texto,
+        style: TextStyle(
+          color: theme.textTheme.bodyLarge?.color,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _textoVacio(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Text(
+        "No hay tareas aún",
+        style: TextStyle(
+          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+        ),
+      ),
+    );
+  }
+
+  // ---------------- DIALOGOS ----------------
 
   Future<bool> _confirmarEliminar() async {
     return await showDialog<bool>(
@@ -133,30 +169,11 @@ class _InicioVistaState extends State<InicioVista> {
         false;
   }
 
-  Widget _tituloSeccion(String texto) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-      child: Text(
-        texto,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _textoVacio() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Text("No hay tareas aún", style: TextStyle(color: Colors.white54)),
-    );
-  }
-
-  // ---------------- BOTTOM SHEET (ADD / EDIT) ----------------
+  // ---------------- BOTTOM SHEET ----------------
 
   void _mostrarBottomSheet(BuildContext context, {Tarea? tarea}) {
+    final theme = Theme.of(context);
+
     final tituloCtrl = TextEditingController(text: tarea?.titulo ?? "");
     DateTime? horaInicio = tarea?.horaInicio;
     DateTime? horaFin = tarea?.horaFin;
@@ -165,7 +182,7 @@ class _InicioVistaState extends State<InicioVista> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
@@ -183,23 +200,31 @@ class _InicioVistaState extends State<InicioVista> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // HANDLE
                     Container(
                       width: 40,
                       height: 4,
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: Colors.white24,
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                          0.3,
+                        ),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
 
                     TextField(
                       controller: tituloCtrl,
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
-                      decoration: const InputDecoration(
+                      style: TextStyle(
+                        color: theme.textTheme.bodyLarge?.color,
+                        fontSize: 18,
+                      ),
+                      decoration: InputDecoration(
                         hintText: "Tarea",
-                        hintStyle: TextStyle(color: Colors.white38),
+                        hintStyle: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                            0.5,
+                          ),
+                        ),
                         border: InputBorder.none,
                       ),
                     ),
@@ -209,24 +234,22 @@ class _InicioVistaState extends State<InicioVista> {
                     Row(
                       children: [
                         _horaBox(
+                          theme: theme,
                           label: "Inicio",
                           hora: horaInicio,
                           onTap: () async {
                             final t = await _pickHora(context);
-                            if (t != null) {
-                              setModal(() => horaInicio = t);
-                            }
+                            if (t != null) setModal(() => horaInicio = t);
                           },
                         ),
                         const SizedBox(width: 12),
                         _horaBox(
+                          theme: theme,
                           label: "Fin",
                           hora: horaFin,
                           onTap: () async {
                             final t = await _pickHora(context);
-                            if (t != null) {
-                              setModal(() => horaFin = t);
-                            }
+                            if (t != null) setModal(() => horaFin = t);
                           },
                         ),
                       ],
@@ -242,10 +265,12 @@ class _InicioVistaState extends State<InicioVista> {
                         return ChoiceChip(
                           label: Text(key),
                           selected: selected,
-                          selectedColor: Colors.grey.shade300,
-                          backgroundColor: Colors.grey.shade800,
+                          selectedColor: theme.primaryColor.withOpacity(0.2),
+                          backgroundColor: theme.cardColor,
                           labelStyle: TextStyle(
-                            color: selected ? Colors.black : Colors.white,
+                            color: selected
+                                ? theme.primaryColor
+                                : theme.textTheme.bodyLarge?.color,
                           ),
                           onSelected: (_) => setModal(() => categoria = key),
                         );
@@ -258,7 +283,7 @@ class _InicioVistaState extends State<InicioVista> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Temas.AcentoColorOscuro,
+                          backgroundColor: theme.primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -308,6 +333,7 @@ class _InicioVistaState extends State<InicioVista> {
   }
 
   Widget _horaBox({
+    required ThemeData theme,
     required String label,
     required DateTime? hora,
     required VoidCallback onTap,
@@ -319,16 +345,21 @@ class _InicioVistaState extends State<InicioVista> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.grey.shade800,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             children: [
-              Text(label, style: const TextStyle(color: Colors.white54)),
+              Text(
+                label,
+                style: TextStyle(
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 hora == null ? "--:--" : DateFormat("HH:mm").format(hora),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
               ),
             ],
           ),

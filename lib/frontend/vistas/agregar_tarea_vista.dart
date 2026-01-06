@@ -36,6 +36,14 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
     {"icon": Icons.place, "label": "Lugar"},
   ];
 
+  bool get _esOscuro => Theme.of(context).brightness == Brightness.dark;
+
+  Color get _fondo => _esOscuro ? Temas.FondoOscuro : Temas.FondoClaro;
+  Color get _widget => _esOscuro ? Temas.WidgetOscuro : Temas.WidgetClaro;
+  Color get _texto => _esOscuro ? Temas.TextOscuro : Temas.TextoClaro;
+  Color get _acento =>
+      _esOscuro ? Temas.AcentoColorOscuro : Temas.AcentoColorClaro;
+
   void _mostrarError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
@@ -68,9 +76,9 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
         usuarioId: "usuario_demo",
       );
 
-      //limpiar el formulario
       _tituloCtrl.clear();
       _descripcionCtrl.clear();
+
       setState(() {
         _horaInicio = null;
         _horaFin = null;
@@ -87,19 +95,28 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
     }
   }
 
-  //picker hora
   Future<DateTime?> _pickHora() async {
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.white,
-              onPrimary: Colors.black,
-              surface: Color(0xFF1E1E1E),
-              onSurface: Colors.white,
+          data: Theme.of(context).copyWith(
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: _fondo,
+              hourMinuteColor: _widget,
+              hourMinuteTextColor: _texto,
+              dialBackgroundColor: _widget,
+              dialHandColor: _acento,
+              dialTextColor: _texto,
+              entryModeIconColor: _acento,
+              dayPeriodTextColor: _texto,
+            ),
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: _acento,
+              onPrimary: Temas.TextOscuro,
+              surface: _fondo,
+              onSurface: _texto,
             ),
           ),
           child: child!,
@@ -116,8 +133,12 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Temas.FondoOscuro,
-      appBar: AppBar(backgroundColor: Temas.FondoOscuro),
+      backgroundColor: _fondo,
+      appBar: AppBar(
+        backgroundColor: _fondo,
+        elevation: 0,
+        iconTheme: IconThemeData(color: _texto),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -126,27 +147,24 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
             TextField(
               controller: _tituloCtrl,
               decoration: _input("Nombre de la actividad"),
-              style: const TextStyle(color: Temas.TextOscuro),
+              style: TextStyle(color: _texto),
             ),
 
             const SizedBox(height: 10),
 
             SwitchListTile(
-              title: const Text(
-                "Hora inicio",
-                style: TextStyle(color: Temas.TextOscuro),
-              ),
+              title: Text("Hora inicio", style: TextStyle(color: _texto)),
               subtitle: Text(
                 _horaInicio != null
                     ? DateFormat("HH:mm").format(_horaInicio!)
                     : "Sin hora",
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(color: _texto.withOpacity(0.6)),
               ),
               value: _horaInicio != null,
-              activeColor: Colors.white,
-              activeTrackColor: const Color(0xFF39FF14),
-              inactiveThumbColor: Colors.white,
-              inactiveTrackColor: Colors.grey.shade700,
+              activeColor: Colors.white, // circulito blanco
+              activeTrackColor: _acento, // pista color acento
+              inactiveThumbColor: Colors.white, // apagado igual
+              inactiveTrackColor: _widget,
               onChanged: (v) async {
                 if (!v) {
                   setState(() => _horaInicio = null);
@@ -158,21 +176,19 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
             ),
 
             SwitchListTile(
-              title: const Text(
-                "Hora fin",
-                style: TextStyle(color: Temas.TextOscuro),
-              ),
+              title: Text("Hora fin", style: TextStyle(color: _texto)),
               subtitle: Text(
                 _horaFin != null
                     ? DateFormat("HH:mm").format(_horaFin!)
                     : "Sin hora",
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(color: _texto.withOpacity(0.6)),
               ),
               value: _horaFin != null,
-              activeColor: Colors.white,
-              activeTrackColor: const Color(0xFF39FF14),
-              inactiveThumbColor: Colors.white,
-              inactiveTrackColor: Colors.grey.shade700,
+              activeColor: Colors.white, // circulito blanco
+              activeTrackColor: _acento, // pista color acento
+              inactiveThumbColor: Colors.white, // apagado igual
+              inactiveTrackColor: _widget,
+
               onChanged: (v) async {
                 if (!v) {
                   setState(() => _horaFin = null);
@@ -189,17 +205,14 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
               controller: _descripcionCtrl,
               maxLines: 3,
               decoration: _input("Descripción"),
-              style: const TextStyle(color: Temas.TextOscuro),
+              style: TextStyle(color: _texto),
             ),
 
             const SizedBox(height: 20),
 
-            const Text(
+            Text(
               "Categorías",
-              style: TextStyle(
-                color: Temas.TextOscuro,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: _texto, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 12),
@@ -222,25 +235,21 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
                       setState(() => _categoriaSeleccionada = cat["label"]),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Temas.WidgetOscuro,
+                      color: _widget,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: selected ? Colors.white : Colors.transparent,
-                        width: 2,
-                      ),
+                      border: selected
+                          ? Border.all(color: _acento, width: 2)
+                          : null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(cat["icon"], size: 22, color: Colors.white),
+                        Icon(cat["icon"], size: 22, color: _texto),
                         const SizedBox(height: 4),
                         Text(
                           cat["label"],
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Colors.white,
-                          ),
+                          style: TextStyle(fontSize: 10, color: _texto),
                         ),
                       ],
                     ),
@@ -256,13 +265,19 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
               child: ElevatedButton(
                 onPressed: _guardando ? null : _guardarTarea,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Temas.AcentoColorOscuro,
+                  backgroundColor: _acento,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text("Guardar"),
+                child: Text(
+                  "Guardar",
+                  style: TextStyle(
+                    color: Temas.FondoClaro,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],
@@ -274,9 +289,9 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
   InputDecoration _input(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: Colors.grey),
+      hintStyle: TextStyle(color: _texto.withOpacity(0.5)),
       filled: true,
-      fillColor: Temas.WidgetOscuro,
+      fillColor: _widget,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,

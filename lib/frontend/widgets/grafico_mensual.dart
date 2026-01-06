@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:ticday/frontend/temas/temas.dart';
 
 class GraficoMensual extends StatefulWidget {
   final List<double> datos; // 0.0 a 1.0
@@ -20,12 +21,14 @@ class _GraficoMensualState extends State<GraficoMensual> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final hoy = DateTime.now().day - 1;
-      _scrollController.jumpTo(
-        (hoy * anchoPorDia).clamp(
-          0,
-          _scrollController.position.maxScrollExtent,
-        ),
-      );
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(
+          (hoy * anchoPorDia).clamp(
+            0,
+            _scrollController.position.maxScrollExtent,
+          ),
+        );
+      }
     });
   }
 
@@ -41,10 +44,22 @@ class _GraficoMensualState extends State<GraficoMensual> {
   Widget build(BuildContext context) {
     final anchoGrafico = widget.datos.length * anchoPorDia;
 
+    final bool esOscuro = Theme.of(context).brightness == Brightness.dark;
+
+    final Color fondo = esOscuro ? Temas.WidgetOscuro : Temas.WidgetClaro;
+
+    final Color texto = esOscuro ? Temas.TextOscuro : Temas.TextoClaro;
+
+    final Color acento = esOscuro
+        ? Temas.AcentoColorOscuro
+        : Temas.AcentoColorClaro;
+
+    final Color gridColor = esOscuro ? Colors.white10 : Colors.black12;
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A),
+        color: fondo,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -55,19 +70,19 @@ class _GraficoMensualState extends State<GraficoMensual> {
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left),
-                color: Colors.pinkAccent,
+                color: acento,
                 onPressed: () => _mover(-1),
               ),
-              const Text(
+              Text(
                 "Progreso diario",
                 style: TextStyle(
-                  color: Colors.white70,
+                  color: texto.withOpacity(0.8),
                   fontWeight: FontWeight.w600,
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
-                color: Colors.pinkAccent,
+                color: acento,
                 onPressed: () => _mover(1),
               ),
             ],
@@ -92,13 +107,15 @@ class _GraficoMensualState extends State<GraficoMensual> {
                       handleBuiltInTouches: true,
                       touchSpotThreshold: 30,
                       touchTooltipData: LineTouchTooltipData(
-                        tooltipBgColor: Colors.black87,
+                        tooltipBgColor: esOscuro
+                            ? Colors.black87
+                            : Colors.white,
                         getTooltipItems: (spots) {
                           return spots.map((spot) {
                             return LineTooltipItem(
                               "Día ${spot.x.toInt() + 1}\n${spot.y.toInt()}%",
-                              const TextStyle(
-                                color: Colors.pinkAccent,
+                              TextStyle(
+                                color: acento,
                                 fontWeight: FontWeight.bold,
                               ),
                             );
@@ -112,7 +129,7 @@ class _GraficoMensualState extends State<GraficoMensual> {
                       drawVerticalLine: false,
                       horizontalInterval: 25,
                       getDrawingHorizontalLine: (_) =>
-                          FlLine(color: Colors.white10, strokeWidth: 1),
+                          FlLine(color: gridColor, strokeWidth: 1),
                     ),
 
                     titlesData: FlTitlesData(
@@ -123,8 +140,8 @@ class _GraficoMensualState extends State<GraficoMensual> {
                           reservedSize: 36,
                           getTitlesWidget: (value, _) => Text(
                             "${value.toInt()}%",
-                            style: const TextStyle(
-                              color: Colors.white60,
+                            style: TextStyle(
+                              color: texto.withOpacity(0.6),
                               fontSize: 11,
                             ),
                           ),
@@ -138,8 +155,8 @@ class _GraficoMensualState extends State<GraficoMensual> {
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
                               "${value.toInt() + 1}",
-                              style: const TextStyle(
-                                color: Colors.white60,
+                              style: TextStyle(
+                                color: texto.withOpacity(0.6),
                                 fontSize: 11,
                               ),
                             ),
@@ -165,11 +182,11 @@ class _GraficoMensualState extends State<GraficoMensual> {
                         isCurved: true,
                         curveSmoothness: 0.35,
                         barWidth: 4.2,
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [
-                            Color(0xFFFF2E63),
-                            Color(0xFFFF6FB1),
-                            Color(0xFFFFA6D8),
+                            acento,
+                            acento.withOpacity(0.75),
+                            acento.withOpacity(0.45),
                           ],
                         ),
                         dotData: FlDotData(
@@ -177,9 +194,9 @@ class _GraficoMensualState extends State<GraficoMensual> {
                           getDotPainter: (_, __, ___, ____) {
                             return FlDotCirclePainter(
                               radius: 6.5,
-                              color: Colors.pinkAccent.withOpacity(0.85),
+                              color: acento,
                               strokeWidth: 2,
-                              strokeColor: Colors.white,
+                              strokeColor: fondo,
                             );
                           },
                         ),
@@ -189,8 +206,8 @@ class _GraficoMensualState extends State<GraficoMensual> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              const Color(0xFFFF6FB1).withOpacity(0.35),
-                              const Color(0x00FF6FB1),
+                              acento.withOpacity(0.25),
+                              acento.withOpacity(0.0),
                             ],
                           ),
                         ),

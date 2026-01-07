@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ticday/backend/controladores/usuario_controlador.dart';
+import 'package:ticday/frontend/temas/temas.dart';
 
 class PerfilVista extends StatefulWidget {
   final String uid;
@@ -18,10 +18,7 @@ class _PerfilVistaState extends State<PerfilVista> {
   String? _avatarSeleccionado;
   bool _cargando = true;
 
-  final List<String> _avatars = List.generate(
-    20,
-    (index) => 'avatar${index + 1}.png',
-  );
+  final List<String> _avatars = List.generate(20, (i) => 'avatar${i + 1}.png');
 
   @override
   void initState() {
@@ -30,63 +27,56 @@ class _PerfilVistaState extends State<PerfilVista> {
   }
 
   Future<void> _cargarUsuario() async {
-    try {
-      await _controlador.cargarUsuario(widget.uid);
+    await _controlador.cargarUsuario(widget.uid);
+    final usuario = _controlador.usuario;
 
-      final usuario = _controlador.usuario;
-      if (usuario != null) {
-        _nombreController.text = usuario.nombre;
-        _avatarSeleccionado = usuario.iconoAvatar;
-      }
-    } catch (e) {
-      debugPrint('Error cargando usuario: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _cargando = false);
-      }
+    if (usuario != null) {
+      _nombreController.text = usuario.nombre;
+      _avatarSeleccionado = usuario.iconoAvatar;
     }
+
+    if (mounted) setState(() => _cargando = false);
   }
 
   Future<void> _guardarPerfil() async {
-    final nombre = _nombreController.text.trim();
-
-    if (nombre.isEmpty) {
-      _mostrarAlerta('Falta tu nombre', 'Ingresá tu nombre para continuar.');
+    if (_nombreController.text.trim().isEmpty) {
+      _alerta("Falta tu nombre", "Ingresá tu nombre para continuar");
       return;
     }
 
     if (_avatarSeleccionado == null) {
-      _mostrarAlerta('Elegí un avatar', 'Seleccioná uno antes de guardar.');
+      _alerta("Elegí un avatar", "Seleccioná uno antes de guardar");
       return;
     }
 
     await _controlador.actualizarUsuario(
       uid: widget.uid,
-      nombre: nombre,
+      nombre: _nombreController.text.trim(),
       avatar: _avatarSeleccionado!,
       tema: _controlador.usuario?.tema ?? 'light',
     );
 
-    if (!mounted) return;
-    Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
   }
 
-  void _mostrarAlerta(String titulo, String mensaje) {
-    final theme = Theme.of(context);
-
-    showCupertinoDialog(
+  void _alerta(String titulo, String msg) {
+    showDialog(
       context: context,
-      builder: (_) => CupertinoAlertDialog(
+      builder: (_) => AlertDialog(
+        backgroundColor: Theme.of(context).cardColor,
         title: Text(titulo),
-        content: Text(mensaje),
+        content: Text(msg),
         actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            child: Text(
-              'OK',
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
+          TextButton(
             onPressed: () => Navigator.pop(context),
+            child: Text(
+              "OK",
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Temas.AcentoColorOscuro
+                    : Temas.AcentoColorClaro,
+              ),
+            ),
           ),
         ],
       ),
@@ -95,140 +85,142 @@ class _PerfilVistaState extends State<PerfilVista> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final fondo = isDark ? Temas.FondoOscuro : Temas.FondoClaro;
+    final card = isDark ? Temas.WidgetOscuro : Temas.WidgetClaro;
+    final texto = isDark ? Temas.TextOscuro : Temas.TextoClaro;
+    final acento = isDark ? Temas.AcentoColorOscuro : Temas.AcentoColorClaro;
 
     if (_cargando) {
-      return Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        body: const Center(child: CupertinoActivityIndicator()),
+      return Theme(
+        data: Theme.of(context),
+        child: const Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: CupertinoNavigationBar(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        border: null,
-        middle: Text(
-          'Perfil',
-          style: TextStyle(
-            color: theme.textTheme.bodyLarge?.color,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        trailing: GestureDetector(
-          onTap: _guardarPerfil,
-          child: Text(
-            'Guardar',
-            style: TextStyle(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Center(
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: theme.colorScheme.primary, width: 2),
-              ),
-              child: ClipOval(
-                child: _avatarSeleccionado != null
-                    ? Image.asset(
-                        'assets/avatars/$_avatarSeleccionado',
-                        fit: BoxFit.cover,
-                      )
-                    : Icon(
-                        CupertinoIcons.person_fill,
-                        size: 52,
-                        color: theme.textTheme.bodyMedium?.color?.withOpacity(
-                          0.4,
-                        ),
-                      ),
+    return Theme(
+      data: Theme.of(context), // 🔥 ESTO ES LA CLAVE
+      child: Scaffold(
+        backgroundColor: fondo,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: fondo,
+          foregroundColor: texto,
+          title: const Text("Perfil"),
+          actions: [
+            TextButton(
+              onPressed: _guardarPerfil,
+              child: Text(
+                "Guardar",
+                style: TextStyle(color: acento, fontWeight: FontWeight.w600),
               ),
             ),
-          ),
-
-          const SizedBox(height: 28),
-
-          CupertinoFormSection.insetGrouped(
-            backgroundColor: theme.scaffoldBackgroundColor,
-            children: [
-              CupertinoTextFormFieldRow(
-                controller: _nombreController,
-                placeholder: 'Tu nombre',
-                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
-                placeholderStyle: TextStyle(
-                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4),
-                ),
+          ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: 120,
+                height: 120,
                 decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  shape: BoxShape.circle,
+                  color: card,
+                  border: Border.all(
+                    color: _avatarSeleccionado != null
+                        ? (isDark ? Colors.white : Colors.black)
+                        : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: ClipOval(
+                  child: _avatarSeleccionado != null
+                      ? Image.asset(
+                          'assets/avatars/$_avatarSeleccionado',
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(
+                          Icons.person_rounded,
+                          size: 54,
+                          color: texto.withOpacity(0.4),
+                        ),
                 ),
               ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          Text(
-            'Elegí tu avatar',
-            style: TextStyle(
-              color: theme.textTheme.bodyLarge?.color,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
             ),
-          ),
 
-          const SizedBox(height: 12),
+            const SizedBox(height: 32),
 
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _avatars.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 14,
-              mainAxisSpacing: 14,
-            ),
-            itemBuilder: (context, index) {
-              final avatar = _avatars[index];
-              final seleccionado = avatar == _avatarSeleccionado;
-
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _avatarSeleccionado = avatar;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: seleccionado
-                          ? theme.colorScheme.primary
-                          : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      'assets/avatars/$avatar',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: card,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: TextField(
+                controller: _nombreController,
+                style: TextStyle(color: texto),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  labelText: "Tu nombre",
+                  labelStyle: TextStyle(color: texto.withOpacity(0.6)),
                 ),
-              );
-            },
-          ),
-        ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            Text(
+              "Elegí tu avatar",
+              style: TextStyle(
+                color: texto,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _avatars.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+              ),
+              itemBuilder: (_, i) {
+                final avatar = _avatars[i];
+                final selected = avatar == _avatarSeleccionado;
+
+                return GestureDetector(
+                  onTap: () => setState(() => _avatarSeleccionado = avatar),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: selected
+                            ? (isDark ? Colors.white : Colors.black)
+                            : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/avatars/$avatar',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

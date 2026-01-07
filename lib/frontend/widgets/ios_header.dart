@@ -1,70 +1,129 @@
 import 'package:flutter/material.dart';
-import '../temas/temas.dart';
 
 class IOSHeader extends StatelessWidget {
   final String nombre;
   final String avatar;
   final VoidCallback onMenuTap;
+  final VoidCallback onAvatarTap;
 
   const IOSHeader({
     super.key,
     required this.nombre,
     required this.avatar,
     required this.onMenuTap,
+    required this.onAvatarTap,
   });
+
+  static const List<String> _frasesDiarias = [
+    "Organizá tu día y ganale al caos",
+    "Un paso hoy, progreso mañana",
+    "Constancia > motivación",
+    "Hacé foco, lo demás espera",
+    "Hoy también cuenta",
+    "Menos excusas, más acción",
+    "Avanzá aunque sea lento",
+    "Disciplina primero, resultados después",
+    "Lo simple bien hecho gana",
+    "Un día ordenado = mente clara",
+    "Construí tu mejor versión",
+    "El progreso es acumulativo",
+    "Hoy entrenás el hábito",
+    "Hacé que valga",
+    "No pares ahora",
+    "Pequeñas victorias suman",
+    "Elegí avanzar",
+    "Enfocada > ocupada",
+    "Paso firme, cabeza clara",
+    "Un día más fuerte",
+    "Que el día te siga a vos",
+    "Rutina que libera",
+    "Hoy también se construye",
+    "Todo suma",
+    "Constancia silenciosa",
+    "Modo foco activado",
+    "Menos ruido, más intención",
+    "Seguimos",
+    "Hoy se progresa",
+    "No aflojes",
+    "Día productivo desbloqueado",
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final saludo = nombre.trim().isEmpty ? "Hola! 👋" : "Hola $nombre! 👋";
+
+    final dia = DateTime.now().day;
+    final frase = _frasesDiarias[(dia - 1) % _frasesDiarias.length];
 
     return SafeArea(
       bottom: false,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
         decoration: BoxDecoration(
-          color: isDark ? Temas.FondoOscuro : Colors.white,
+          color: isDark ? const Color(0xFF0F0F0F) : Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.22 : 0.06),
-              blurRadius: 12,
+              color: isDark
+                  ? Colors.black.withOpacity(0.45)
+                  : Colors.black.withOpacity(0.06),
+              blurRadius: isDark ? 22 : 14,
               offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // BOTÓN MENÚ PRO
-            _MenuButton(isDark: isDark, onTap: onMenuTap),
+            // MENU
+            InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: onMenuTap,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.06)
+                      : Colors.black.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.menu_open_rounded,
+                  size: 24,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ),
 
             const SizedBox(width: 14),
 
-            // TEXTO
+            // TEXTOS
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _fraseMotivadora(),
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.2,
-                      color: isDark
-                          ? Temas.TextOscuro.withOpacity(0.7)
-                          : Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    nombre,
+                    saludo,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 21,
+                      fontSize: 19,
                       fontWeight: FontWeight.w700,
-                      color: isDark ? Temas.TextOscuro : Temas.TextoClaro,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    frase,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? Colors.white.withOpacity(0.6)
+                          : Colors.grey.shade600,
                     ),
                   ),
                 ],
@@ -73,77 +132,57 @@ class IOSHeader extends StatelessWidget {
 
             const SizedBox(width: 14),
 
-            // AVATAR
-            _Avatar(avatar: avatar, isDark: isDark),
+            InkWell(
+              onTap: onAvatarTap,
+              borderRadius: BorderRadius.circular(30),
+              child: _AvatarCircle(avatar: avatar, isDark: isDark),
+            ),
           ],
         ),
       ),
     );
   }
-
-  String _fraseMotivadora() {
-    final frases = [
-      "Buen laburo, seguir apareciendo ya es ganar",
-      "Otro día cumpliendo, así se construye",
-      "Paso a paso, pero siempre para adelante",
-      "Lo estás haciendo mejor de lo que creés",
-      "Esto no es suerte, es constancia",
-      "Sumaste otro día, eso cuenta",
-      "No cualquiera sostiene este ritmo",
-      "Estás en modo progreso, seguí así",
-      "Cada check suma, no aflojes",
-      "Hoy también elegiste avanzar",
-      "Disciplina silenciosa, resultados reales",
-      "Esto se está armando bien",
-      "No perfecto, pero constante",
-      "Seguís firme, eso habla de vos",
-      "Lo difícil ya lo estás haciendo",
-      "Otro ladrillo más al futuro",
-      "Estás cumpliendo, disfrutalo",
-      "No cualquiera llega hasta acá",
-      "Modo enfoque activado",
-      "Hoy también sumaste",
-      "Esto es compromiso real",
-      "Constancia > motivación",
-      "Estás jugando a largo plazo",
-      "Buen ritmo, buena cabeza",
-      "El progreso se nota",
-      "Seguí así, vas bien",
-      "No pares ahora",
-      "Otro día ganado",
-      "Esto es construir hábitos",
-      "Lo estás logrando",
-      "Seguir es la clave",
-    ];
-
-    final dia = DateTime.now().day;
-    return frases[(dia - 1) % frases.length];
-  }
 }
 
-class _Avatar extends StatelessWidget {
+class _AvatarCircle extends StatelessWidget {
   final String avatar;
   final bool isDark;
 
-  const _Avatar({required this.avatar, required this.isDark});
+  const _AvatarCircle({required this.avatar, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 48,
-      height: 48,
+      width: 46,
+      height: 46,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.25) : Colors.grey.shade200,
+          color: isDark ? Colors.white.withOpacity(0.22) : Colors.grey.shade200,
           width: 2,
         ),
       ),
-      child: ClipOval(
-        child: avatar.isNotEmpty
-            ? Image.asset('assets/avatars/$avatar', fit: BoxFit.cover)
-            : _fallback(),
-      ),
+      child: ClipOval(child: _buildAvatar()),
+    );
+  }
+
+  Widget _buildAvatar() {
+    if (avatar.trim().isEmpty) {
+      return _fallback();
+    }
+
+    if (avatar.startsWith('http')) {
+      return Image.network(
+        avatar,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _fallback(),
+      );
+    }
+
+    return Image.asset(
+      'assets/avatars/$avatar',
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _fallback(),
     );
   }
 
@@ -152,38 +191,8 @@ class _Avatar extends StatelessWidget {
       color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
       child: Icon(
         Icons.person_rounded,
-        color: isDark ? Colors.white70 : Colors.white,
         size: 26,
-      ),
-    );
-  }
-}
-
-class _MenuButton extends StatelessWidget {
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _MenuButton({required this.isDark, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.04),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Icon(
-          Icons.dashboard_rounded,
-          size: 22,
-          color: isDark ? Colors.white : Colors.black87,
-        ),
+        color: isDark ? Colors.white70 : Colors.white,
       ),
     );
   }

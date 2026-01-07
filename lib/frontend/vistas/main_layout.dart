@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'inicio_vista.dart';
 import 'agregar_tarea_vista.dart';
 import 'estadisticas_vista.dart';
-import '../../backend/estado/usuario_estado.dart';
-import '../../backend/modelos/usuario_modelo.dart';
+
 import '../temas/temas.dart';
 import '../widgets/ios_menu.dart';
-import '../widgets/ios_header.dart';
+import '../widgets/app_header.dart';
 
 class MainLayout extends StatefulWidget {
   final String uid;
@@ -37,24 +36,12 @@ class _MainLayoutState extends State<MainLayout> {
       drawer: IOSDrawer(uid: widget.uid),
       backgroundColor: isDark ? Temas.FondoOscuro : Temas.FondoClaro,
 
-      body: _indexActual == 0
-          ? ValueListenableBuilder<UsuarioModelo?>(
-              valueListenable: usuarioNotifier,
-              builder: (context, usuario, _) {
-                return Column(
-                  children: [
-                    IOSHeader(
-                      nombre: usuario?.nombre ?? "Hola",
-                      avatar: usuario?.iconoAvatar ?? "",
-                      onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-                    ),
+      appBar: AppHeader(
+        uid: widget.uid,
+        onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
 
-                    const Expanded(child: InicioVista()),
-                  ],
-                );
-              },
-            )
-          : _vistas[_indexActual],
+      body: _vistas[_indexActual],
 
       floatingActionButton: _indexActual == 0
           ? FloatingActionButton(

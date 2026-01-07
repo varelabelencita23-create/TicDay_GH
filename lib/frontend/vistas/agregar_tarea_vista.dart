@@ -134,9 +134,6 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _fondo,
-      appBar: AppHeader(onMenuTap: () => Scaffold.of(context).openDrawer()),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

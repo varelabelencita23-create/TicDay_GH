@@ -51,8 +51,6 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _fondo,
-      appBar: AppHeader(onMenuTap: () => Scaffold.of(context).openDrawer()),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         child: Column(

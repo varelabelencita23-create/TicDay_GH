@@ -34,12 +34,27 @@ class _MainLayoutState extends State<MainLayout> {
 
     return Scaffold(
       key: _scaffoldKey,
-
       drawer: IOSDrawer(uid: widget.uid),
-
       backgroundColor: isDark ? Temas.FondoOscuro : Temas.FondoClaro,
 
-      body: _indexActual == 0 ? _homeConHeader(context) : _vistas[_indexActual],
+      body: _indexActual == 0
+          ? ValueListenableBuilder<UsuarioModelo?>(
+              valueListenable: usuarioNotifier,
+              builder: (context, usuario, _) {
+                return Column(
+                  children: [
+                    IOSHeader(
+                      nombre: usuario?.nombre ?? "Hola",
+                      avatar: usuario?.iconoAvatar ?? "",
+                      onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                    ),
+
+                    const Expanded(child: InicioVista()),
+                  ],
+                );
+              },
+            )
+          : _vistas[_indexActual],
 
       floatingActionButton: _indexActual == 0
           ? FloatingActionButton(
@@ -75,50 +90,6 @@ class _MainLayoutState extends State<MainLayout> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _homeConHeader(BuildContext context) {
-    return NestedScrollView(
-      headerSliverBuilder: (_, __) {
-        return [
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 170,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            ),
-            flexibleSpace: LayoutBuilder(
-              builder: (context, constraints) {
-                final max = 170.0;
-                final min = kToolbarHeight + 24;
-                final t = ((max - constraints.maxHeight) / (max - min)).clamp(
-                  0.0,
-                  1.0,
-                );
-
-                return ValueListenableBuilder<UsuarioModelo?>(
-                  valueListenable: usuarioNotifier,
-                  builder: (context, usuario, _) {
-                    final nombre = usuario?.nombre ?? "Hola";
-                    final avatar = usuario?.iconoAvatar ?? "";
-
-                    return IOSHeader(
-                      nombre: nombre,
-                      avatar: avatar,
-                      collapseFactor: t,
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ];
-      },
-      body: const InicioVista(),
     );
   }
 }

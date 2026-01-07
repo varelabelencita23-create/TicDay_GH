@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ticday/frontend/temas/temas.dart';
 import '../../backend/controladores/agregar_tarea_controlador.dart';
+import '../widgets/app_header.dart';
 
 class AgregarTareaVista extends StatefulWidget {
   const AgregarTareaVista({super.key});
@@ -134,11 +135,8 @@ class _AgregarTareaVistaState extends State<AgregarTareaVista> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _fondo,
-      appBar: AppBar(
-        backgroundColor: _fondo,
-        elevation: 0,
-        iconTheme: IconThemeData(color: _texto),
-      ),
+      appBar: AppHeader(onMenuTap: () => Scaffold.of(context).openDrawer()),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

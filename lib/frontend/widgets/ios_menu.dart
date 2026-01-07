@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ticday/frontend/vistas/perfil_vista.dart';
-import 'package:ticday/backend/controladores/usuario_controlador.dart';
-import 'package:ticday/backend/estado/usuario_estado.dart';
-import 'package:ticday/backend/estado/tema_estado.dart';
+import 'package:ticday/frontend/widgets/theme_dialog.dart';
 
 class IOSDrawer extends StatelessWidget {
   final String uid;
@@ -60,6 +58,7 @@ class IOSDrawer extends StatelessWidget {
               ),
             ),
 
+            /// PERFIL
             _DrawerItem(
               icon: CupertinoIcons.person,
               label: 'Perfil',
@@ -72,56 +71,18 @@ class IOSDrawer extends StatelessWidget {
               },
             ),
 
+            /// TEMA
             _DrawerItem(
               icon: CupertinoIcons.paintbrush,
               label: 'Tema',
               onTap: () {
                 Navigator.pop(context);
-                showCupertinoModalPopup(
-                  context: context,
-                  builder: (_) => CupertinoActionSheet(
-                    title: const Text('Elegí un tema'),
-                    actions: [
-                      CupertinoActionSheetAction(
-                        child: const Text('Modo claro'),
-                        onPressed: () async {
-                          final usuario = usuarioNotifier.value;
-                          if (usuario != null) {
-                            temaNotifier.value = ThemeMode.light;
-                            await UsuarioControlador().actualizarUsuario(
-                              uid: usuario.id,
-                              nombre: usuario.nombre,
-                              avatar: usuario.iconoAvatar,
-                              tema: 'light',
-                            );
-                          }
-                          Navigator.pop(context);
-                        },
-                      ),
-                      CupertinoActionSheetAction(
-                        child: const Text('Modo oscuro'),
-                        onPressed: () async {
-                          final usuario = usuarioNotifier.value;
-                          if (usuario != null) {
-                            temaNotifier.value = ThemeMode.dark;
-                            await UsuarioControlador().actualizarUsuario(
-                              uid: usuario.id,
-                              nombre: usuario.nombre,
-                              avatar: usuario.iconoAvatar,
-                              tema: 'dark',
-                            );
-                          }
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ],
-                    cancelButton: CupertinoActionSheetAction(
-                      isDefaultAction: true,
-                      child: const Text('Cancelar'),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                );
+
+                Future.delayed(Duration.zero, () {
+                  showThemeDialog(
+                    Navigator.of(context, rootNavigator: true).context,
+                  );
+                });
               },
             ),
 

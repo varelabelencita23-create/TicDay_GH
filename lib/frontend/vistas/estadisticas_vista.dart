@@ -6,6 +6,7 @@ import '../../backend/controladores/estadisticas_controlador.dart';
 import '../widgets/indicador_circular.dart';
 import '../widgets/grafico_mensual.dart';
 import '../widgets/selector_mes.dart';
+import '../widgets/app_header.dart';
 import 'package:ticday/frontend/widgets/ios_menu.dart';
 
 class EstadisticasVista extends StatefulWidget {
@@ -51,11 +52,7 @@ class _EstadisticasVistaState extends State<EstadisticasVista> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _fondo,
-      appBar: AppBar(
-        backgroundColor: _fondo,
-        elevation: 0,
-        iconTheme: IconThemeData(color: _texto),
-      ),
+      appBar: AppHeader(onMenuTap: () => Scaffold.of(context).openDrawer()),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         child: Column(

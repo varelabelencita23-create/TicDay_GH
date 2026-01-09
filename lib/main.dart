@@ -14,6 +14,8 @@ void main() async {
 
   await initializeDateFormatting('es');
 
+  await cargarTemaInicial();
+
   runApp(const TicDayFinal());
 }
 

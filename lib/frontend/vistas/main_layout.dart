@@ -31,6 +31,8 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final accent = isDark ? Temas.AcentoColorOscuro : Temas.AcentoColorClaro;
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: IOSDrawer(uid: widget.uid),
@@ -45,9 +47,9 @@ class _MainLayoutState extends State<MainLayout> {
 
       floatingActionButton: _indexActual == 0
           ? FloatingActionButton(
-              backgroundColor: Temas.AcentoColorOscuro,
+              backgroundColor: accent,
               onPressed: () => setState(() => _indexActual = 1),
-              child: const Icon(Icons.add),
+              child: const Icon(Icons.add, color: Colors.white),
             )
           : null,
 
